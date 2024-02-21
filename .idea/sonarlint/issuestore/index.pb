@@ -1,8 +1,6 @@
 
 ]
 -src/main/java/com/example/RestApiHandler.java,a\3\a37381418bde796abcae002122fae527f2d01dd8
-^
-.src/main/java/com/example/DatabaseHandler.java,7\5\75ace3cca13d9c38696cd59617a70920f0845661
 7
 pom.xml,4\4\442292b8a7efeabbe4cc176709b833b1792140ec
 ]
@@ -218,14 +216,8 @@ w
 G.idea/sonarlint/issuestore/b/7/b74e8c230459235775e2f7c88126ddb0ac14fa2d,f\b\fb161f50f4ccaeff05773bcbbd14483b77364e1c
 [
 +src/main/java/com/example/MySQLManager.java,0\1\0141dc68532fccb95a1764b32e2f09c836ab6bbb
-[
-+src/main/java/com/example/QueryManager.java,4\a\4a3f8e2a2d4baa82fb16a3e4472d51fbf77fd15c
 \
 ,src/main/java/com/example/model/Product.java,4\d\4d8c966b37c3c081bf7be61de2622c301b385a9a
-V
-&src/main/java/com/example/exampla.java,d\b\dba15c6d4d63535e16df47e97a28653755ffb59d
-^
-.src/main/java/com/example/ResponseExample.java,6\1\6171b2e8671be62045a7f23fd1a74c89031424ef
 W
 'src/main/java/com/example/Response.java,4\9\49448e0b6161d890e51ced2aefe0fdc62290afb2
 Å
@@ -1084,3 +1076,7 @@ Y
 )src/main/java/com/example/SqlService.java,5\7\5764c041009c01e2249b0bf2b74250b5a32f7376
 Å
 Q.idea/sonarlint/securityhotspotstore/5/7/5764c041009c01e2249b0bf2b74250b5a32f7376,4\8\483dae6d6dd61480baf7313c33852db96ed6f6a3
+f
+6src/main/java/com/example/Service/SaleItemService.java,1\0\100855115a804ec81ed1372cb0068f4201a4e9c0
+f
+6src/main/java/com/example/service/SaleItemService.java,b\e\be6af030607f6a8c16bd329b6662d998af0d7296

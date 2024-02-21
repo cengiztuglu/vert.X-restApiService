@@ -41,13 +41,13 @@ public class Product {
         return vat;
     }
 
-    public void setVat(int vat) {
+    public void setVat(double vat) {
         this.vat = vat;
     }
     public double getPrice(){
         return price;
     }
-    public void setPrice(int price)
+    public void setPrice(double price)
     {
         this.price=price;
     }
