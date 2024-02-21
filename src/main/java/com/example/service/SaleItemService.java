@@ -3,6 +3,7 @@ package com.example.service;
 import com.example.Response;
 import com.example.model.Product;
 import com.google.gson.Gson;
+import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.RoutingContext;
@@ -27,7 +28,7 @@ public class SaleItemService {
         executeQueryAndRespond(routingContext, "SELECT * FROM sale_item");
     }
 
-    public void addSaleItem(RoutingContext routingContext) {
+    public void addSaleItem(RoutingContext routingContext, EventBus eventBus) {
         JsonArray requestArray = routingContext.getBodyAsJsonArray();
 
         List<JsonObject> successResponses = new ArrayList<>();
@@ -35,7 +36,7 @@ public class SaleItemService {
         for (Object item : requestArray) {
             if (item instanceof JsonObject) {
                 JsonObject requestBody = (JsonObject) item;
-                handleInsertRequest(routingContext, requestBody, requestArray, successResponses, "sale_item", "itemName", "vat", "price");
+                handleInsertRequest(routingContext, requestBody, requestArray, successResponses,  "sale_item",eventBus, "itemName", "vat", "price");
             } else {
                 // Handle error: invalid request format
                 Response errorResponse = createErrorResponse("Invalid request format", "Request body should be a JSON array of objects.");
@@ -74,16 +75,28 @@ public class SaleItemService {
                 });
     }
 
-    private void handleInsertRequest(RoutingContext routingContext, JsonObject requestBody, JsonArray requestArray, List<JsonObject> successResponses, String tableName, String... columns) {
+    private void handleInsertRequest(
+            RoutingContext routingContext,
+            JsonObject requestBody,
+            JsonArray requestArray,
+            List<JsonObject> successResponses,
+            String tableName,
+            EventBus eventBus,
+            String... columns) {
+
         String columnNames = String.join(", ", columns);
         String placeholders = String.join(", ", java.util.Collections.nCopies(columns.length, "?"));
 
         String insertQuery = "INSERT INTO " + tableName + " (" + columnNames + ") VALUES (" + placeholders + ")";
 
         Object[] values = getProductValuesFromRequestBody(requestBody, columns);
+        JsonObject eventData = new JsonObject()
+                .put("itemName", requestBody.getString("itemName"))
+                .put("vat", requestBody.getDouble("vat"))
+                .put("price", requestBody.getDouble("price"));
 
-
-
+// Olayı EventBus üzerinden yayınla
+        eventBus.publish("sale.item.added", eventData);
         databasePool.preparedQuery(insertQuery)
                 .execute(Tuple.wrap(values))
                 .onComplete(ar -> {
@@ -94,14 +107,12 @@ public class SaleItemService {
                         successResponses.add(createSuccessJson(successResponse));
 
                         if (successResponses.size() == requestArray.size()) {
-                            // If all inserts are complete, send the responses
                             routingContext.response()
-                                    .setStatusCode(201)  // Created status code
+                                    .setStatusCode(201)
                                     .putHeader(CONTENT_TYPE_HEADER, APPLICATION_JSON)
                                     .end(new JsonArray(successResponses).encode());
                         }
                     } else {
-                        // Handle error and create response
                         Response errorResponse = createErrorResponse("Error occurred while inserting into the database", ar.cause().getMessage());
                         responseJson = createErrorJson(errorResponse);
                         routingContext.response()
