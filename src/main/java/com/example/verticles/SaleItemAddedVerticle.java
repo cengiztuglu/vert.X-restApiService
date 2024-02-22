@@ -1,4 +1,4 @@
-package verticles;
+package com.example.verticles;
 
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.eventbus.EventBus;

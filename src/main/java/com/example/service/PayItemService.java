@@ -1,5 +1,6 @@
 package com.example.service;
 
+import com.example.model.PayItemProduct;
 import com.example.model.SaleItemProduct;
 import com.google.gson.Gson;
 import io.vertx.core.eventbus.EventBus;
@@ -13,15 +14,15 @@ import com.example.Response;
 import java.util.ArrayList;
 import java.util.List;
 
-public class SaleItemService extends BaseService {
+public class PayItemService extends BaseService {
 
-    public SaleItemService(Pool databasePool, EventBus eventBus) {
+    public PayItemService(Pool databasePool, EventBus eventBus) {
         super(databasePool, eventBus);
     }
 
     @Override
     public void getAllItems(RoutingContext routingContext) {
-        executeQueryAndRespond(routingContext, "SELECT * FROM sale_item");
+        executeQueryAndRespond(routingContext, "SELECT * FROM pay_item");
     }
 
     @Override
@@ -33,7 +34,7 @@ public class SaleItemService extends BaseService {
         for (Object item : requestArray) {
             if (item instanceof JsonObject) {
                 JsonObject requestBody = (JsonObject) item;
-                handleInsertRequest(routingContext, requestBody, requestArray, successResponses, "sale_item",eventBus ,"itemName", "vat", "price");
+                handleInsertRequest(routingContext, requestBody, requestArray, successResponses, "pay_item",eventBus ,"type",  "amount");
             } else {
                 // Handle error: invalid request format
                 Response errorResponse = createErrorResponse("Invalid request format", "Request body should be a JSON array of objects.");
@@ -51,19 +52,16 @@ public class SaleItemService extends BaseService {
     @Override
     protected Object[] getValuesFromRequestBody(JsonObject requestBody, String[] columns) {
         Gson gson = new Gson();
-        SaleItemProduct saleItemProduct = gson.fromJson(requestBody.encode(), SaleItemProduct.class);
+        PayItemProduct payItemProduct = gson.fromJson(requestBody.encode(), PayItemProduct.class);
         Object[] values = new Object[columns.length];
         for (int i = 0; i < columns.length; i++) {
             String columnName = columns[i];
             switch (columnName) {
-                case "itemName":
-                    values[i] = saleItemProduct.getItemName();
+                case "type":
+                    values[i] = payItemProduct.getType();
                     break;
-                case "vat":
-                    values[i] = saleItemProduct.getVat();
-                    break;
-                case "price":
-                    values[i] = saleItemProduct.getPrice();
+                case "amount":
+                    values[i] = payItemProduct.getAmount();
                     break;
                 default:
                     throw new IllegalArgumentException("Unknown column: " + columnName);
@@ -75,13 +73,12 @@ public class SaleItemService extends BaseService {
     @Override
     protected JsonObject createEventData(JsonObject requestBody, String[] columns) {
         Gson gson = new Gson();
-        SaleItemProduct saleItemProduct = gson.fromJson(requestBody.encode(), SaleItemProduct.class);
+        PayItemProduct payItemProduct = gson.fromJson(requestBody.encode(), PayItemProduct.class);
 
         // Oluşturulan nesneyi JsonObject'e dönüştürün
-      return new   JsonObject()
-                .put("itemName", saleItemProduct.getItemName())
-                .put("vat", saleItemProduct.getVat())
-                .put("price", saleItemProduct.getPrice());
+        return new   JsonObject()
+                .put("type", payItemProduct.getType())
+                .put("amount", payItemProduct.getAmount());
 
 
     }

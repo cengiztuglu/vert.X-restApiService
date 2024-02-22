@@ -1,7 +1,7 @@
 package com.example.model;
 
 
-public class Product {
+public class SaleItemProduct {
 
     private int itemId;
     private String itemName;
@@ -9,11 +9,11 @@ public class Product {
     private double price;
 
 
-    public Product() {
+    public SaleItemProduct() {
     }
 
     // Parametreli kurucu metod
-    public Product(int itemId, String itemName, int vat,int price) {
+    public SaleItemProduct(int itemId, String itemName, double vat, double price) {
         this.itemId = itemId;
         this.itemName = itemName;
         this.vat = vat;
