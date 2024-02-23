@@ -1,6 +1,4 @@
 
-u	java:S120"ZRename this package name to match the regular expression '^[a-z_]+(\.[a-z_][a-z0-9_]*)*$'.(Ω„r8αςΖ„έ1
+u	java:S120"ZRename this package name to match the regular expression '^[a-z_]+(\.[a-z_][a-z0-9_]*)*$'.(Ω„r8υρ±έ1
 W
-java:S2387"5"vertx" is the name of a field in "AbstractVerticle".(ÒΫ¤ϊÿÿÿÿ8εςΖ„έ1
-]
-java:S1128"@Remove this unused import 'com.example.service.SaleItemService'.(ό“ΘΘ8ιςΖ„έ1
+java:S2387"5"vertx" is the name of a field in "AbstractVerticle".(ÒΫ¤ϊÿÿÿÿ8ϋρ±έ1

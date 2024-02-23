@@ -12,17 +12,20 @@ import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.handler.BodyHandler;
 import io.vertx.sqlclient.Pool;
 
-public class PayItemController extends AbstractVerticle {
+public class ItemController extends AbstractVerticle {
 
     private final PayItemService payItemService;
+    private final SaleItemService saleItemService;
 
     private final EventBus eventBus;
     private final Vertx vertx;
 
-    public PayItemController(Pool databasePool,Vertx vertx) {
+    public ItemController(Pool databasePool, Vertx vertx) {
         this.vertx = vertx;
         this.eventBus = vertx.eventBus();
         this.payItemService = new PayItemService(databasePool, eventBus);
+        this.saleItemService=new  SaleItemService(databasePool,eventBus);
+
     }
 
     @Override
@@ -33,7 +36,8 @@ public class PayItemController extends AbstractVerticle {
         // Define routes
         router.route(HttpMethod.GET, "/api/payItem").handler(this::getAllPayItem);
         router.route(HttpMethod.POST, "/api/payItem").handler(BodyHandler.create()).handler(this::addPayItem);
-
+        router.route(HttpMethod.GET, "/api/saleItem").handler(this::getAllSaleItem);
+        router.route(HttpMethod.POST, "/api/saleItem").handler(BodyHandler.create()).handler(this::addSaleItem);
         // Start the server
         server.requestHandler(router).listen(8080);
     }
@@ -45,4 +49,13 @@ public class PayItemController extends AbstractVerticle {
     private void addPayItem(RoutingContext routingContext) {
         payItemService.addItem(routingContext);
     }
+    private void getAllSaleItem(RoutingContext routingContext) {
+        saleItemService.getAllItems(routingContext);
+    }
+
+    private void addSaleItem(RoutingContext routingContext) {
+        saleItemService.addItem(routingContext);
+    }
+
+
 }

@@ -20,7 +20,7 @@ public abstract class BaseService {
     protected final Pool databasePool;
     protected final EventBus eventBus;
 
-    protected   BaseService(Pool databasePool, EventBus eventBus) {
+    protected BaseService(Pool databasePool, EventBus eventBus) {
         this.databasePool = databasePool;
         this.eventBus = eventBus;
     }
@@ -32,37 +32,26 @@ public abstract class BaseService {
     protected abstract Object[] getValuesFromRequestBody(JsonObject requestBody, String[] columns);
 
     protected void executeQueryAndRespond(RoutingContext routingContext, String sqlQuery) {
-        databasePool.query(sqlQuery)
-                .execute()
-                .onComplete(ar -> {
-                    if (ar.succeeded()) {
-                        List<JsonObject> results = new ArrayList<>();
-                        for (Row row : ar.result()) {
-                            JsonObject jsonRow = new JsonObject(row.toJson().encode());
-                            results.add(jsonRow);
-                        }
+        databasePool.query(sqlQuery).execute().onComplete(ar -> {
+            if (ar.succeeded()) {
+                List<JsonObject> results = new ArrayList<>();
+                for (Row row : ar.result()) {
+                    JsonObject jsonRow = new JsonObject(row.toJson().encode());
+                    results.add(jsonRow);
+                }
 
-                        routingContext.response()
-                                .putHeader(CONTENT_TYPE_HEADER, APPLICATION_JSON)
-                                .end(new JsonArray(results).encode());
-                    } else {
-                        // Handle error and create response
-                        Response errorResponse = createErrorResponse("Error occurred while querying the database", ar.cause().getMessage());
-                        JsonObject errorJson = createErrorJson(errorResponse);
+                routingContext.response().putHeader(CONTENT_TYPE_HEADER, APPLICATION_JSON).end(new JsonArray(results).encode());
+            } else {
+                // Handle error and create response
+                Response errorResponse = createErrorResponse("Error occurred while querying the database", ar.cause().getMessage());
+                JsonObject errorJson = createErrorJson(errorResponse);
 
-                        routingContext.fail(errorResponse.getResponseCode(), new RuntimeException(errorJson.encode()));
-                    }
-                });
+                routingContext.fail(errorResponse.getResponseCode(), new RuntimeException(errorJson.encode()));
+            }
+        });
     }
 
-    protected void handleInsertRequest(
-            RoutingContext routingContext,
-            JsonObject requestBody,
-            JsonArray requestArray,
-            List<JsonObject> successResponses,
-            String tableName,
-            EventBus eventBus,
-            String... columns) {
+    protected void handleInsertRequest(RoutingContext routingContext, JsonObject requestBody, JsonArray requestArray, List<JsonObject> successResponses, String tableName, EventBus eventBus, String... columns) {
 
         String columnNames = String.join(", ", columns);
         String placeholders = String.join(", ", java.util.Collections.nCopies(columns.length, "?"));
@@ -73,37 +62,29 @@ public abstract class BaseService {
         JsonObject eventData = createEventData(requestBody, columns);
 
         // Olayı EventBus üzerinden yayınla
-        eventBus.publish( "sale.item.added", eventData);
-        databasePool.preparedQuery(insertQuery)
-                .execute(Tuple.wrap(values))
-                .onComplete(ar -> {
-                    JsonObject responseJson;
-                    if (ar.succeeded()) {
-                        long recordNumber = ar.result().property(MySQLClient.LAST_INSERTED_ID);
-                        Response successResponse = createSuccessResponse("Record added successfully", recordNumber);
-                        successResponses.add(createSuccessJson(successResponse));
+        eventBus.publish(tableName + ".added", eventData);
+        databasePool.preparedQuery(insertQuery).execute(Tuple.wrap(values)).onComplete(ar -> {
+            JsonObject responseJson;
+            if (ar.succeeded()) {
+                long recordNumber = ar.result().property(MySQLClient.LAST_INSERTED_ID);
+                Response successResponse = createSuccessResponse(recordNumber);
+                successResponses.add(createSuccessJson(successResponse));
 
-                        if (successResponses.size() == requestArray.size()) {
-                            routingContext.response()
-                                    .setStatusCode(201)
-                                    .putHeader(CONTENT_TYPE_HEADER, APPLICATION_JSON)
-                                    .end(new JsonArray(successResponses).encode());
-                        }
-                    } else {
-                        Response errorResponse = createErrorResponse("Error occurred while inserting into the database", ar.cause().getMessage());
-                        responseJson = createErrorJson(errorResponse);
-                        routingContext.response()
-                                .setStatusCode(errorResponse.getResponseCode())
-                                .putHeader(CONTENT_TYPE_HEADER, APPLICATION_JSON)
-                                .end(responseJson.encode());
-                    }
-                });
+                if (successResponses.size() == requestArray.size()) {
+                    routingContext.response().setStatusCode(201).putHeader(CONTENT_TYPE_HEADER, APPLICATION_JSON).end(new JsonArray(successResponses).encode());
+                }
+            } else {
+                Response errorResponse = createErrorResponse("Error occurred while inserting into the database", ar.cause().getMessage());
+                responseJson = createErrorJson(errorResponse);
+                routingContext.response().setStatusCode(errorResponse.getResponseCode()).putHeader(CONTENT_TYPE_HEADER, APPLICATION_JSON).end(responseJson.encode());
+            }
+        });
     }
 
     protected abstract JsonObject createEventData(JsonObject requestBody, String[] columns);
 
-    protected Response createSuccessResponse(String description, long recordNumber) {
-        return new Response(0, description, "Record number: " + recordNumber);
+    protected Response createSuccessResponse(long recordNumber) {
+        return new Response(0, "Record added successfully", "Record number: " + recordNumber);
     }
 
     protected Response createErrorResponse(String description, String detail) {
@@ -111,16 +92,10 @@ public abstract class BaseService {
     }
 
     protected JsonObject createSuccessJson(Response successResponse) {
-        return new JsonObject()
-                .put("success", successResponse.getResponseCode())
-                .put("responseDescription", successResponse.getResponseDescription())
-                .put("responseDetail", successResponse.getResponseDetail());
+        return new JsonObject().put("success", successResponse.getResponseCode()).put("responseDescription", successResponse.getResponseDescription()).put("responseDetail", successResponse.getResponseDetail());
     }
 
     protected JsonObject createErrorJson(Response errorResponse) {
-        return new JsonObject()
-                .put("error", errorResponse.getResponseCode())
-                .put("responseDescription", errorResponse.getResponseDescription())
-                .put("responseDetail", errorResponse.getResponseDetail());
+        return new JsonObject().put("error", errorResponse.getResponseCode()).put("responseDescription", errorResponse.getResponseDescription()).put("responseDetail", errorResponse.getResponseDetail());
     }
 }
