@@ -11,6 +11,7 @@ import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.Tuple;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public abstract class BaseService {
@@ -28,6 +29,8 @@ public abstract class BaseService {
     public abstract void getAllItems(RoutingContext routingContext);
 
     public abstract void addItem(RoutingContext routingContext);
+    public abstract void updateItemById(RoutingContext routingContext);
+
 
     protected abstract Object[] getValuesFromRequestBody(JsonObject requestBody, String[] columns);
 
@@ -80,6 +83,36 @@ public abstract class BaseService {
             }
         });
     }
+
+
+    protected void handleUpdateRequest(RoutingContext routingContext, String tableName, String idColumn, String id, String itemName, double price, double vat) {
+        // Güncelleme sorgusu oluşturun
+        String updateQuery = "UPDATE " + tableName + " SET itemName=?, price=?, vat=? WHERE " + idColumn + "=?";
+
+
+        Tuple updateTuple = Tuple.of(itemName, price, vat, Long.parseLong(id));
+
+        databasePool.preparedQuery(updateQuery).execute(updateTuple).onComplete(ar -> {
+            if (ar.succeeded()) {
+                Response successResponse = createSuccessResponse(0); // 0, başarı durumunu temsil eder, isteğe bağlı olarak başka bir değer de kullanabilirsiniz
+                JsonObject responseJson = createSuccessJson(successResponse);
+
+                routingContext.response().setStatusCode(200)
+                        .putHeader(CONTENT_TYPE_HEADER, APPLICATION_JSON)
+                        .end(responseJson.encode());
+            } else {
+                // Hata durumunu işleyin
+                Response errorResponse = createErrorResponse("Error occurred while updating the database", ar.cause().getMessage());
+                JsonObject responseJson = createErrorJson(errorResponse);
+
+                routingContext.response().setStatusCode(errorResponse.getResponseCode())
+                        .putHeader(CONTENT_TYPE_HEADER, APPLICATION_JSON)
+                        .end(responseJson.encode());
+            }
+        });
+    }
+
+
 
     protected abstract JsonObject createEventData(JsonObject requestBody, String[] columns);
 

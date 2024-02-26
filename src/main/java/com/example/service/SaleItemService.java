@@ -15,7 +15,7 @@ import java.util.List;
 
 public class SaleItemService extends BaseService {
 
-    public SaleItemService(Pool databasePool, EventBus eventBus) {
+public SaleItemService(Pool databasePool, EventBus eventBus) {
         super(databasePool, eventBus);
     }
 
@@ -47,6 +47,36 @@ public class SaleItemService extends BaseService {
             }
         }
     }
+    public void updateItemById(RoutingContext routingContext) {
+        JsonArray requestArray = routingContext.getBodyAsJsonArray();
+        String id = routingContext.request().getParam("itemId");
+
+        if (id == null || id.isEmpty()) {
+            Response errorResponse = createErrorResponse("ID not provided", "Please provide the ID in the request");
+            JsonObject errorJson = createErrorJson(errorResponse);
+
+            routingContext.response().setStatusCode(errorResponse.getResponseCode())
+                    .putHeader(CONTENT_TYPE_HEADER, APPLICATION_JSON)
+                    .end(errorJson.encode());
+            return;
+        }
+
+        JsonObject requestBody = requestArray.getJsonObject(0); // Sadece ilk öğeyi al
+        String tableName = "sale_item";
+        String idColumn = "itemId";
+        String[] columnsToUpdate = {"itemName", "price", "vat"};
+
+        // Güncellenecek değerleri al
+        String itemName = requestBody.getString("itemName");
+        double price = requestBody.getDouble("price");
+        double vat = requestBody.getDouble("vat");
+
+
+        handleUpdateRequest(routingContext, tableName, idColumn, id, itemName, price, vat);
+    }
+
+
+
 
     @Override
     protected Object[] getValuesFromRequestBody(JsonObject requestBody, String[] columns) {

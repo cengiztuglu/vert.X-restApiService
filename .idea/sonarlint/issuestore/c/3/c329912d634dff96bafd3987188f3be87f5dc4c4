@@ -1,8 +1,0 @@
-
-f
-java:S11925"IDefine a constant instead of duplicating this literal "itemName" 3 times.(ÂûÀË8ìôİàÜ1
-c
-java:S11925"FDefine a constant instead of duplicating this literal "price" 3 times.(ÂûÀË8ìôİàÜ1
-M	java:S106"+Replace this use of System.err by a logger.(ÜÏ¯×úÿÿÿÿ8šõİàÜ1
-I
-java:S1068",Remove this unused "eventBus" private field.(˜é˜–8®ßàÜ1

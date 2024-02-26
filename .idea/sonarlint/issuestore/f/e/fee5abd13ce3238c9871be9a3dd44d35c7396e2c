@@ -1,0 +1,9 @@
+
+u	java:S120"ZRename this package name to match the regular expression '^[a-z_]+(\.[a-z_][a-z0-9_]*)*$'.(Ù„r8æÒ¢¯İ1
+R
+java:S2387"5"vertx" is the name of a field in "AbstractVerticle".(¤¤ï8Ïş¢¯İ1
+V
+java:S5993"9Change the visibility of this constructor to "protected".(¼â¥³8Ïş¢¯İ1
+Q
+java:S1128
+"4Remove this unused import 'io.vertx.sqlclient.Pool'.(æÀè‘8Òş¢¯İ1

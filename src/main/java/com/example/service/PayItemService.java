@@ -1,7 +1,6 @@
 package com.example.service;
 
 import com.example.model.PayItemProduct;
-import com.example.model.SaleItemProduct;
 import com.google.gson.Gson;
 import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.json.JsonArray;
@@ -47,6 +46,11 @@ public class PayItemService extends BaseService {
                 return;
             }
         }
+    }
+
+    @Override
+    public void updateItemById(RoutingContext routingContext) {
+        return ;
     }
 
     @Override
