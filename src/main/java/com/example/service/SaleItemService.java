@@ -61,10 +61,9 @@ public SaleItemService(Pool databasePool, EventBus eventBus) {
             return;
         }
 
-        JsonObject requestBody = requestArray.getJsonObject(0); // Sadece ilk öğeyi al
+        JsonObject requestBody = requestArray.getJsonObject(0);
         String tableName = "sale_item";
         String idColumn = "itemId";
-        String[] columnsToUpdate = {"itemName", "price", "vat"};
 
         // Güncellenecek değerleri al
         String itemName = requestBody.getString("itemName");
@@ -74,9 +73,24 @@ public SaleItemService(Pool databasePool, EventBus eventBus) {
 
         handleUpdateRequest(routingContext, tableName, idColumn, id, itemName, price, vat);
     }
+    public void deleteItemById(RoutingContext routingContext) {
+        String id = routingContext.request().getParam("itemId");
 
+        if (id == null || id.isEmpty()) {
+            Response errorResponse = createErrorResponse("ID not provided", "Please provide the ID in the request");
+            JsonObject errorJson = createErrorJson(errorResponse);
 
+            routingContext.response().setStatusCode(errorResponse.getResponseCode())
+                    .putHeader(CONTENT_TYPE_HEADER, APPLICATION_JSON)
+                    .end(errorJson.encode());
+            return;
+        }
 
+        String tableName = "sale_item";
+        String idColumn = "itemId";
+
+        handleDeleteRequest(routingContext, tableName, idColumn, id);
+    }
 
     @Override
     protected Object[] getValuesFromRequestBody(JsonObject requestBody, String[] columns) {

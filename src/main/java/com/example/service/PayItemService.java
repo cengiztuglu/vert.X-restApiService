@@ -48,10 +48,7 @@ public class PayItemService extends BaseService {
         }
     }
 
-    @Override
-    public void updateItemById(RoutingContext routingContext) {
-        return ;
-    }
+
 
     @Override
     protected Object[] getValuesFromRequestBody(JsonObject requestBody, String[] columns) {

@@ -1,9 +1,9 @@
 
+d
+java:S11924"GDefine a constant instead of duplicating this literal "itemId" 4 times.(ŠîÎä8¸Ñ£Ş1
 f
-java:S1192$"IDefine a constant instead of duplicating this literal "itemName" 5 times.(ó‡©Ú8ú‹¢¡Ş1
+java:S1192$"IDefine a constant instead of duplicating this literal "itemName" 4 times.(ó‡©Ú8¸Ñ£Ş1
 c
-java:S1192$"FDefine a constant instead of duplicating this literal "price" 5 times.(ó‡©Ú8ú‹¢¡Ş1
-e
-java:S1854C"CRemove this useless assignment to local variable "columnsToUpdate".(ô–íìşÿÿÿÿ8ğ–“¢Ş1
-V
-java:S1481C"4Remove this unused "columnsToUpdate" local variable.(ô–íìşÿÿÿÿ8ò–“¢Ş1
+java:S1192$"FDefine a constant instead of duplicating this literal "price" 4 times.(ó‡©Ú8¹Ñ£Ş1
+g
+java:S1192$"JDefine a constant instead of duplicating this literal "sale_item" 3 times.(ó‡©Ú8¿êå£Ş1

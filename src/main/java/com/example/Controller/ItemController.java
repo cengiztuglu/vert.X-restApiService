@@ -39,6 +39,7 @@ public class ItemController extends AbstractVerticle {
         router.route(HttpMethod.GET, "/api/saleItem").handler(this::getAllSaleItem);
         router.route(HttpMethod.POST, "/api/saleItem").handler(BodyHandler.create()).handler(this::addSaleItem);
         router.route(HttpMethod.PUT, "/api/saleItem/:itemId").handler(BodyHandler.create()).handler(this::updateSaleItem); // Yeni güncelleme yönlendirmesi eklendi
+        router.route(HttpMethod.DELETE, "/api/saleItem/:itemId").handler(BodyHandler.create()).handler(this::updateDeleteItem); // Yeni güncelleme yönlendirmesi eklendi
 
         // Start the server
         server.requestHandler(router).listen(8080);
@@ -62,7 +63,7 @@ public class ItemController extends AbstractVerticle {
         saleItemService.updateItemById(routingContext);
     }
 
-
+   private  void  updateDeleteItem(RoutingContext routingContext)  {saleItemService.deleteItemById(routingContext);}
 
 
 }

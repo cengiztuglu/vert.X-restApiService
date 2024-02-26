@@ -11,7 +11,6 @@ import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.Tuple;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 public abstract class BaseService {
@@ -94,7 +93,9 @@ public abstract class BaseService {
 
         databasePool.preparedQuery(updateQuery).execute(updateTuple).onComplete(ar -> {
             if (ar.succeeded()) {
-                Response successResponse = createSuccessResponse(0); // 0, başarı durumunu temsil eder, isteğe bağlı olarak başka bir değer de kullanabilirsiniz
+                long recordNumber = Long.parseLong(id);
+
+                Response successResponse = createSuccessResponse(recordNumber);
                 JsonObject responseJson = createSuccessJson(successResponse);
 
                 routingContext.response().setStatusCode(200)
@@ -110,6 +111,25 @@ public abstract class BaseService {
                         .end(responseJson.encode());
             }
         });
+    }
+    protected  void handleDeleteRequest(RoutingContext routingContext, String tableName, String idColumn, String id)
+    {
+        String deleteQuery = "DELETE FROM " + tableName + " WHERE " + idColumn + "=?";
+        databasePool.preparedQuery(deleteQuery).execute(Tuple.of(Long.parseLong(id))).onComplete(ar->
+        {
+            if(ar.succeeded()){
+                Long recordNumber=(Long.parseLong(id));
+                Response succesResponse=createSuccessResponse(recordNumber);
+                JsonObject responseJson=createSuccessJson(succesResponse);
+
+                routingContext.response().setStatusCode(200)
+                        .putHeader(CONTENT_TYPE_HEADER,APPLICATION_JSON)
+                        .end(responseJson.encode());
+
+            }
+        });
+
+
     }
 
 
