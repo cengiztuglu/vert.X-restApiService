@@ -48,6 +48,10 @@ public class PayItemService extends BaseService {
         }
     }
 
+    @Override
+    public void updateItemById(RoutingContext routingContext) {
+
+    }
 
 
     @Override

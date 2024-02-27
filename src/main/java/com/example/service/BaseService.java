@@ -10,6 +10,7 @@ import com.example.Response;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.Tuple;
 
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -76,10 +77,12 @@ public abstract class BaseService {
                     routingContext.response().setStatusCode(201).putHeader(CONTENT_TYPE_HEADER, APPLICATION_JSON).end(new JsonArray(successResponses).encode());
                 }
             } else {
+
                 Response errorResponse = createErrorResponse("Error occurred while inserting into the database", ar.cause().getMessage());
                 responseJson = createErrorJson(errorResponse);
                 routingContext.response().setStatusCode(errorResponse.getResponseCode()).putHeader(CONTENT_TYPE_HEADER, APPLICATION_JSON).end(responseJson.encode());
             }
+
         });
     }
 

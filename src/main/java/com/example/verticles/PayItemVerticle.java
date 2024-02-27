@@ -6,8 +6,8 @@ import io.vertx.core.json.JsonObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class PayItemVertical extends AbstractVerticle {
-    private static final Logger logger = LoggerFactory.getLogger(PayItemVertical.class);
+public class PayItemVerticle extends AbstractVerticle {
+    private static final Logger logger = LoggerFactory.getLogger(PayItemVerticle.class);
 
     @Override
     public void start() {

@@ -7,8 +7,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 
-public class SaleItemAddedVertical extends AbstractVerticle {
-    private static final Logger logger = LoggerFactory.getLogger(SaleItemAddedVertical.class);
+public class SaleItemAddedVerticle extends AbstractVerticle {
+    private static final Logger logger = LoggerFactory.getLogger(SaleItemAddedVerticle.class);
 
     @Override
     public void start() {
