@@ -13,9 +13,9 @@ import com.example.Response;
 import java.util.ArrayList;
 import java.util.List;
 
-public class PayItemService extends BaseService {
+public class PayItemServiceVerticle extends BaseService {
 
-    public PayItemService(Pool databasePool, EventBus eventBus) {
+    public PayItemServiceVerticle(Pool databasePool, EventBus eventBus) {
         super(databasePool, eventBus);
     }
 

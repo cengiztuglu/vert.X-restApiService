@@ -41,13 +41,5 @@ public class SaleItemProduct {
         this.price = price;
     }
 
-    // toString metodu (isteğe bağlı, nesneyi string olarak temsil etmek için)
-    @Override
-    public String toString() {
-        return "Product{" +
-                "itemName='" + itemName + '\'' +
-                ", vat=" + vat +
-                ", price=" + price +
-                '}';
-    }
+
 }

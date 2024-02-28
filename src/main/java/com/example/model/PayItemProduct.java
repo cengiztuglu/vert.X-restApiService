@@ -38,12 +38,5 @@ public class PayItemProduct {
         this.amount = amount;
     }
 
-    @Override
-    public String toString() {
-        return "PayItem{" +
-                "payId=" + payId +
-                ", type='" + type + '\'' +
-                ", amount=" + amount +
-                '}';
-    }
+
 }

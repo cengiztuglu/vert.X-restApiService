@@ -1,8 +1,8 @@
 package com.example.verticles;
 
 import com.example.MySQLManager;
-import com.example.service.PayItemService;
-import com.example.service.SaleItemService;
+import com.example.service.PayItemServiceVerticle;
+import com.example.service.SaleItemServiceVerticle;
 import io.vertx.config.ConfigRetriever;
 import io.vertx.config.ConfigRetrieverOptions;
 import io.vertx.config.ConfigStoreOptions;
@@ -17,33 +17,40 @@ import io.vertx.ext.web.handler.BodyHandler;
 import io.vertx.sqlclient.Pool;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import static com.example.MySQLManager.databasePool;
 
 
 public class MainService {
 
     private final Router router;
-    private final PayItemService payItemService;
-    private final SaleItemService saleItemService;
+    private final PayItemServiceVerticle payItemService;
+    private final SaleItemServiceVerticle saleItemService;
     public static Vertx vertx;
     private static final Logger logger = LoggerFactory.getLogger(MainService.class);
 
-    public MainService(Vertx vertx, Pool databasePool) {
+    public MainService(Vertx vertx) {
         MainService.vertx = vertx;
 
-        this.router = Router.router(vertx);
-        this.payItemService = new PayItemService(databasePool, vertx.eventBus());
-        this.saleItemService = new SaleItemService(databasePool, vertx.eventBus());
+        this.router = Router.router(MainService.vertx);
+        this.payItemService = new PayItemServiceVerticle(databasePool, vertx.eventBus());
+        this.saleItemService = new SaleItemServiceVerticle(databasePool, vertx.eventBus());
         startService();
     }
 
     public static void main(String[] args) {
-        vertx = Vertx.vertx();
-        MySQLManager mySQLManager = MySQLManager.getInstance(vertx);
+        MainService.vertx = Vertx.vertx();
+        MySQLManager.init(MainService.vertx);
 
-        vertx.deployVerticle(SaleItemAddedVerticle.class.getName(),new DeploymentOptions());
-        vertx.deployVerticle(PayItemVerticle.class.getName(),new DeploymentOptions());
-        MainService mainService = new MainService(vertx, mySQLManager.getDatabasePool());
-        mainService.startService();
+
+    vertx.deployVerticle(SaleItemAddedVerticle.class.getName(), new DeploymentOptions());
+    vertx.deployVerticle(PayItemVerticle.class.getName(), new DeploymentOptions());
+    MainService mainService = new MainService(vertx);
+    mainService.startService();
+
+
+    logger.error("MySQLManager initialization failed. databasePool is null.");
+
+
     }
 
     private void startService() {
@@ -70,8 +77,8 @@ public class MainService {
 
                 logger.info("Received Configuration: {}", config.encodePrettily());
 
-                String httpHost = config.getString("host");
-                int port = config.getInteger("port");
+                String httpHost = config.getJsonObject("Server").getString("host");
+                int port = config.getJsonObject("Server").getInteger("port");
                 logger.info("HTTP Host: {}", httpHost);
 
                 HttpServerOptions httpServerOptions = new HttpServerOptions();

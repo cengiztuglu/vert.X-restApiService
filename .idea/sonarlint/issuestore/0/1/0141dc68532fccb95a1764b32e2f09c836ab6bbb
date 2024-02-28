@@ -1,3 +1,19 @@
 
-t
-java:S3077"WUse a thread-safe type; adding "volatile" is not enough to make this field thread-safe.(‡ŠØÚ8»ªÑ‰İ1
+e
+java:S11921"IDefine a constant instead of duplicating this literal "database" 5 times.(ê—D8àôÇóŞ1
+m
+java:S1104"QMake vertx a static final constant or non-public and provide accessors if needed.(»´N8àôÇóŞ1
+u
+java:S1104"XMake databasePool a static final constant or non-public and provide accessors if needed.(½ÛÔ‚8àôÇóŞ1
+G
+java:S1444"+Make this "public static vertx" field final(»´N8àôÇóŞ1
+O
+java:S1444"2Make this "public static databasePool" field final(½ÛÔ‚8àôÇóŞ1
+?
+java:S1118"Hide this public constructor.(”—¥ğøÿÿÿÿ8æôÇóŞ1
+y
+java:S3077"WUse a thread-safe type; adding "volatile" is not enough to make this field thread-safe.(¦ÒÃ²üÿÿÿÿ8æôÇóŞ1
+D
+java:S3010""Remove this assignment of "vertx".(é—¨Áıÿÿÿÿ8çôÇóŞ1
+W
+java:S2209"5Change this instance-reference to a static reference.(é—¨Áıÿÿÿÿ8çôÇóŞ1

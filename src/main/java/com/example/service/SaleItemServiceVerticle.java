@@ -13,9 +13,9 @@ import com.example.Response;
 import java.util.ArrayList;
 import java.util.List;
 
-public class SaleItemService extends BaseService {
+public class SaleItemServiceVerticle extends BaseService {
 
-public SaleItemService(Pool databasePool, EventBus eventBus) {
+public SaleItemServiceVerticle(Pool databasePool, EventBus eventBus) {
         super(databasePool, eventBus);
     }
 

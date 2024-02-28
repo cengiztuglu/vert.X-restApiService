@@ -1,5 +1,6 @@
 package com.example.service;
 
+import com.example.MySQLManager;
 import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
@@ -18,11 +19,10 @@ public abstract class BaseService {
 
     protected static final String CONTENT_TYPE_HEADER = "content-type";
     protected static final String APPLICATION_JSON = "application/json";
-    protected final Pool databasePool;
     protected final EventBus eventBus;
 
     protected BaseService(Pool databasePool, EventBus eventBus) {
-        this.databasePool = databasePool;
+        MySQLManager.databasePool = databasePool;
         this.eventBus = eventBus;
     }
 
@@ -35,7 +35,7 @@ public abstract class BaseService {
     protected abstract Object[] getValuesFromRequestBody(JsonObject requestBody, String[] columns);
 
     protected void executeQueryAndRespond(RoutingContext routingContext, String sqlQuery) {
-        databasePool.query(sqlQuery).execute().onComplete(ar -> {
+       MySQLManager.databasePool.query(sqlQuery).execute().onComplete(ar -> {
             if (ar.succeeded()) {
                 List<JsonObject> results = new ArrayList<>();
                 for (Row row : ar.result()) {
@@ -64,9 +64,7 @@ public abstract class BaseService {
         Object[] values = getValuesFromRequestBody(requestBody, columns);
         JsonObject eventData = createEventData(requestBody, columns);
 
-        // Olayı EventBus üzerinden yayınla
-        eventBus.publish(tableName + ".added", eventData);
-        databasePool.preparedQuery(insertQuery).execute(Tuple.wrap(values)).onComplete(ar -> {
+        MySQLManager.databasePool.preparedQuery(insertQuery).execute(Tuple.wrap(values)).onComplete(ar -> {
             JsonObject responseJson;
             if (ar.succeeded()) {
                 long recordNumber = ar.result().property(MySQLClient.LAST_INSERTED_ID);
@@ -94,7 +92,7 @@ public abstract class BaseService {
 
         Tuple updateTuple = Tuple.of(itemName, price, vat, Long.parseLong(id));
 
-        databasePool.preparedQuery(updateQuery).execute(updateTuple).onComplete(ar -> {
+        MySQLManager.databasePool.preparedQuery(updateQuery).execute(updateTuple).onComplete(ar -> {
             if (ar.succeeded()) {
                 long recordNumber = Long.parseLong(id);
 
@@ -118,7 +116,7 @@ public abstract class BaseService {
     protected  void handleDeleteRequest(RoutingContext routingContext, String tableName, String idColumn, String id)
     {
         String deleteQuery = "DELETE FROM " + tableName + " WHERE " + idColumn + "=?";
-        databasePool.preparedQuery(deleteQuery).execute(Tuple.of(Long.parseLong(id))).onComplete(ar->
+       MySQLManager.databasePool.preparedQuery(deleteQuery).execute(Tuple.of(Long.parseLong(id))).onComplete(ar->
         {
             if(ar.succeeded()){
                 Long recordNumber=(Long.parseLong(id));
