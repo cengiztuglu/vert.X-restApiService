@@ -1,8 +1,6 @@
 package com.example.verticles;
 
 import com.example.MySQLManager;
-import com.example.service.PayItemServiceVerticle;
-import com.example.service.SaleItemServiceVerticle;
 import io.vertx.config.ConfigRetriever;
 import io.vertx.config.ConfigRetrieverOptions;
 import io.vertx.config.ConfigStoreOptions;
@@ -10,21 +8,21 @@ import io.vertx.core.DeploymentOptions;
 import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpServer;
 import io.vertx.core.http.HttpServerOptions;
+import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.handler.BodyHandler;
-import io.vertx.sqlclient.Pool;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import static com.example.MySQLManager.databasePool;
+
+import java.util.List;
 
 
 public class MainService {
 
     private final Router router;
-    private final PayItemServiceVerticle payItemService;
-    private final SaleItemServiceVerticle saleItemService;
+
     public static Vertx vertx;
     private static final Logger logger = LoggerFactory.getLogger(MainService.class);
 
@@ -32,8 +30,7 @@ public class MainService {
         MainService.vertx = vertx;
 
         this.router = Router.router(MainService.vertx);
-        this.payItemService = new PayItemServiceVerticle(databasePool, vertx.eventBus());
-        this.saleItemService = new SaleItemServiceVerticle(databasePool, vertx.eventBus());
+
         startService();
     }
 
@@ -42,13 +39,12 @@ public class MainService {
         MySQLManager.init(MainService.vertx);
 
 
-    vertx.deployVerticle(SaleItemAddedVerticle.class.getName(), new DeploymentOptions());
-    vertx.deployVerticle(PayItemVerticle.class.getName(), new DeploymentOptions());
-    MainService mainService = new MainService(vertx);
-    mainService.startService();
+        vertx.deployVerticle(PayItemVerticle.class.getName(), new DeploymentOptions());
+        MainService mainService = new MainService(vertx);
+        mainService.startService();
 
 
-    logger.error("MySQLManager initialization failed. databasePool is null.");
+        logger.error("MySQLManager initialization failed. databasePool is null.");
 
 
     }
@@ -95,46 +91,46 @@ public class MainService {
         });
 
         retriever.listen(configChange -> {
-            JsonObject newConfig=configChange.getNewConfiguration();
+            JsonObject newConfig = configChange.getNewConfiguration();
             logger.info("Configuration has been updated: {}", newConfig.encodePrettily());
 
         });
     }
 
 
-
-
-
     private void addRoutes(Router router) {
-        router.route().method(io.vertx.core.http.HttpMethod.GET).path("/api/payItem").handler(this::getAllPayItem);
+
         router.route().method(io.vertx.core.http.HttpMethod.POST).path("/api/payItem").handler(BodyHandler.create()).handler(this::addPayItem);
-        router.route().method(io.vertx.core.http.HttpMethod.GET).path("/api/saleItem").handler(this::getAllSaleItem);
-        router.route().method(io.vertx.core.http.HttpMethod.POST).path("/api/saleItem").handler(BodyHandler.create()).handler(this::addSaleItem);
-        router.route().method(io.vertx.core.http.HttpMethod.PUT).path("/api/saleItem/:itemId").handler(BodyHandler.create()).handler(this::updateSaleItem);
-        router.route().method(io.vertx.core.http.HttpMethod.DELETE).path("/api/saleItem/:itemId").handler(BodyHandler.create()).handler(this::updateDeleteItem);
+        router.get("/api/payItem").handler(this::getAllPayItem);
+
+    }
+    private void getAllPayItem(RoutingContext routingContext) {
+        vertx.eventBus().request("payItem","", event -> {
+            routingContext.response();
+        });
     }
 
-    private void getAllPayItem(RoutingContext routingContext) {
-        payItemService.getAllItems(routingContext);
-    }
 
     private void addPayItem(RoutingContext routingContext) {
-        payItemService.addItem(routingContext);
-    }
+        JsonArray jsonArray = routingContext.getBodyAsJsonArray();
+        if (jsonArray == null) {
+            routingContext.response()
+                    .setStatusCode(400)
+                    .end("İstekte geçersiz JSON verisi");
+            return;
+        }
 
-    private void getAllSaleItem(RoutingContext routingContext) {
-        saleItemService.getAllItems(routingContext);
-    }
+        vertx.eventBus().request("payItem.add", jsonArray, event -> {
+            if (event.succeeded()) {
+                routingContext.response().setStatusCode(200).end("Ürünler başarıyla eklendi");
+            } else {
 
-    private void addSaleItem(RoutingContext routingContext) {
-        saleItemService.addItem(routingContext);
-    }
-
-    private void updateSaleItem(RoutingContext routingContext) {
-        saleItemService.updateItemById(routingContext);
-    }
-
-    private void updateDeleteItem(RoutingContext routingContext) {
-        saleItemService.deleteItemById(routingContext);
+                routingContext.response().setStatusCode(500).end("Ürünler eklenirken bir hata oluştu");
+            }
+        });
     }
 }
+
+
+
+

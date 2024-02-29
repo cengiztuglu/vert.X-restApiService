@@ -1,7 +1,5 @@
 
-_
-java:S1854A"=Remove this useless assignment to local variable "eventData".(×©ˆøùÿÿÿÿ8¿§øòŞ1
 Q
-java:S11729"/Remove this unused method parameter "eventBus".(Ûäöûÿÿÿÿ8À§øòŞ1
-P
-java:S1481A".Remove this unused "eventData" local variable.(×©ˆøùÿÿÿÿ8Á§øòŞ1
+java:S11729"/Remove this unused method parameter "eventBus".(Ûäöûÿÿÿÿ8ÁĞŒß1
+G
+java:S1128"*Remove this unused import 'io.vertx.core'.(¥ĞÄç8ÇĞŒß1

@@ -1,0 +1,11 @@
+
+i
+java:S1192@"GDefine a constant instead of duplicating this literal "amount" 3 times.(‰ãÿÁùÿÿÿÿ8¢€»Ÿß1
+R
+java:S11722"5Remove this unused method parameter "routingContext".(çµêà8®€»Ÿß1
+P
+java:S1481C".Remove this unused "errorJson" local variable.(ÏÈ¶‡ıÿÿÿÿ8°€»Ÿß1
+K
+java:S1172f".Remove this unused method parameter "columns".(ıŞâ8´€»Ÿß1
+S
+java:S1128"1Remove this unused import 'io.vertx.core.Future'.(á±ÿËşÿÿÿÿ8¯ûĞŸß1

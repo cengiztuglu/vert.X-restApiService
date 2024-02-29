@@ -13,9 +13,9 @@ import com.example.Response;
 import java.util.ArrayList;
 import java.util.List;
 
-public class SaleItemServiceVerticle extends BaseService {
+public class SaleItemVerticle extends BaseService {
 
-public SaleItemServiceVerticle(Pool databasePool, EventBus eventBus) {
+public SaleItemVerticle(Pool databasePool, EventBus eventBus) {
         super(databasePool, eventBus);
     }
 
@@ -121,7 +121,6 @@ public SaleItemServiceVerticle(Pool databasePool, EventBus eventBus) {
         Gson gson = new Gson();
         SaleItemProduct saleItemProduct = gson.fromJson(requestBody.encode(), SaleItemProduct.class);
 
-        // Oluşturulan nesneyi JsonObject'e dönüştürün
       return new   JsonObject()
                 .put("itemName", saleItemProduct.getItemName())
                 .put("vat", saleItemProduct.getVat())

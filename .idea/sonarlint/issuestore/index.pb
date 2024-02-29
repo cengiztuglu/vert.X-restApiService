@@ -1366,3 +1366,9 @@ m
 =src/main/java/com/example/service/PayItemServiceVerticle.java,a\b\ab6828ae734f57750cc1df72e22b73a6fd18c27a
 n
 >src/main/java/com/example/service/SaleItemServiceVerticle.java,f\e\fe6e1b9d3290cc3aa2e43fc1e8fb4d6736cab911
+f
+6src/main/java/com/example/service/PayItemVerticle.java,4\d\4d717d9d16c4ea173490224d23da620418b01fdc
+g
+7src/main/java/com/example/service/SaleItemVerticle.java,c\2\c2d4dd202c444d8d6868a95f768597bcc61dde6b
+i
+9src/main/java/com/example/verticles/SaleItemVerticle.java,6\3\6330ab94844f7e667ec3ad9bcfa7afc6367028ea

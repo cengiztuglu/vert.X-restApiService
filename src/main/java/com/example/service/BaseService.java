@@ -10,7 +10,7 @@ import io.vertx.sqlclient.Pool;
 import com.example.Response;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.Tuple;
-
+import io.vertx.core.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -62,7 +62,6 @@ public abstract class BaseService {
         String insertQuery = "INSERT INTO " + tableName + " (" + columnNames + ") VALUES (" + placeholders + ")";
 
         Object[] values = getValuesFromRequestBody(requestBody, columns);
-        JsonObject eventData = createEventData(requestBody, columns);
 
         MySQLManager.databasePool.preparedQuery(insertQuery).execute(Tuple.wrap(values)).onComplete(ar -> {
             JsonObject responseJson;
@@ -86,7 +85,6 @@ public abstract class BaseService {
 
 
     protected void handleUpdateRequest(RoutingContext routingContext, String tableName, String idColumn, String id, String itemName, double price, double vat) {
-        // Güncelleme sorgusu oluşturun
         String updateQuery = "UPDATE " + tableName + " SET itemName=?, price=?, vat=? WHERE " + idColumn + "=?";
 
 
