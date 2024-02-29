@@ -1,18 +1,18 @@
 package com.example.model;
 
+import io.vertx.core.json.JsonObject;
+
 public class PayItemProduct {
     private int payId;
     private String type;
     private double amount;
 
-    public PayItemProduct() {
-    }
-
-    public PayItemProduct(int payId, String type, double amount) {
-        this.payId = payId;
+    public PayItemProduct(String type, Double amount) {
         this.type = type;
         this.amount = amount;
     }
+
+
 
     public int getPayId() {
         return payId;
@@ -38,5 +38,18 @@ public class PayItemProduct {
         this.amount = amount;
     }
 
+    public static PayItemProduct fromJson(JsonObject json) {
+        if (json == null) {
+            return null;
+        }
 
+        String type = json.getString("type");
+        Double amount = json.getDouble("amount");
+
+        if (type == null || amount == null) {
+            return null;
+        }
+
+        return new PayItemProduct(type, amount);
+    }
 }

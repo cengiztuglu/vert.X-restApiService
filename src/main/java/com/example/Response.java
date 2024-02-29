@@ -1,4 +1,5 @@
 package com.example;
+
 public class Response {
     private int responseCode;
     private String responseDescription;
@@ -20,5 +21,14 @@ public class Response {
 
     public String getResponseDetail() {
         return responseDetail;
+    }
+
+    // toJson metodunu ekleyelim
+    public String toJson() {
+        return "{" +
+                "\"responseCode\":\"" + responseCode + "\"," +
+                "\"responseDescription\":\"" + responseDescription + "\"," +
+                "\"responseDetail\":\"" + responseDetail + "\"" +
+                "}";
     }
 }

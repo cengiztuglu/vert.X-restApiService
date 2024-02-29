@@ -1372,3 +1372,9 @@ g
 7src/main/java/com/example/service/SaleItemVerticle.java,c\2\c2d4dd202c444d8d6868a95f768597bcc61dde6b
 i
 9src/main/java/com/example/verticles/SaleItemVerticle.java,6\3\6330ab94844f7e667ec3ad9bcfa7afc6367028ea
+e
+5src/main/java/com/example/verticles/MainVerticle.java,0\7\07b2a1cedc197f65b98f5e1cf72434ac61438c6c
+g
+7src/main/java/com/example/verticle/PayItemVerticle.java,7\8\785001204ee38fdfaa972bf9f2ba29764ff4714c
+d
+4src/main/java/com/example/verticle/MainVerticle.java,b\a\ba6f883ed5c0b7351fddde183b5011cbb39103c3

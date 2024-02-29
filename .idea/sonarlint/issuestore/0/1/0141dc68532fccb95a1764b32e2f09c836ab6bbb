@@ -1,17 +1,17 @@
 
 u
-java:S1104!"XMake databasePool a static final constant or non-public and provide accessors if needed.(½ÛÔ‚8ŠÅ‰ß1
+java:S1104"XMake databasePool a static final constant or non-public and provide accessors if needed.(½ÛÔ‚8€Ø ¤ß1
 m
-java:S1104""QMake vertx a static final constant or non-public and provide accessors if needed.(»´N8‹Å‰ß1
+java:S1104"QMake vertx a static final constant or non-public and provide accessors if needed.(»´N8€Ø ¤ß1
 O
-java:S1444!"2Make this "public static databasePool" field final(½ÛÔ‚8ŒÅ‰ß1
+java:S1444"2Make this "public static databasePool" field final(½ÛÔ‚8€Ø ¤ß1
 G
-java:S1444""+Make this "public static vertx" field final(»´N8ŒÅ‰ß1
+java:S1444"+Make this "public static vertx" field final(»´N8€Ø ¤ß1
 y
-java:S3077 "WUse a thread-safe type; adding "volatile" is not enough to make this field thread-safe.(¦ÒÃ²üÿÿÿÿ8Å‰ß1
+java:S3077"WUse a thread-safe type; adding "volatile" is not enough to make this field thread-safe.(¦ÒÃ²üÿÿÿÿ8†Ø ¤ß1
 D
-java:S3010$""Remove this assignment of "vertx".(é—¨Áıÿÿÿÿ8ŸÅ‰ß1
+java:S3010""Remove this assignment of "vertx".(é—¨Áıÿÿÿÿ8‡Ø ¤ß1
 W
-java:S2209$"5Change this instance-reference to a static reference.(é—¨Áıÿÿÿÿ8ŸÅ‰ß1
-L	java:S106\"+Replace this use of System.out by a logger.(‡á“âüÿÿÿÿ8®Å‰ß1
-F	java:S106f"+Replace this use of System.out by a logger.(¬÷©P8Ç…¼Ÿß1
+java:S2209"5Change this instance-reference to a static reference.(é—¨Áıÿÿÿÿ8‡Ø ¤ß1
+[
+java:S1128"9Remove this unused import 'io.vertx.core.json.JsonArray'.(Àèˆ¯ÿÿÿÿÿ8‘Ø ¤ß1
