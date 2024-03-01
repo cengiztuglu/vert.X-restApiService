@@ -1,0 +1,17 @@
+
+s
+java:S1192t"QDefine a constant instead of duplicating this literal "application/json" 3 times.(¶§Ìüÿÿÿÿ8‡°ÏÅß1
+o
+java:S1192t"MDefine a constant instead of duplicating this literal "content-type" 3 times.(¶§Ìüÿÿÿÿ8‡°ÏÅß1
+m
+java:S1104"QMake vertx a static final constant or non-public and provide accessors if needed.(»´N8‡°ÏÅß1
+G
+java:S1444"+Make this "public static vertx" field final(»´N8ˆ°ÏÅß1
+D
+java:S3010""Remove this assignment of "vertx".(’åÖÃøÿÿÿÿ8”°ÏÅß1
+L	java:S106B"+Replace this use of System.out by a logger.(Ü‚»ıÿÿÿÿ8™°ÏÅß1
+G	java:S106C"+Replace this use of System.out by a logger.(»‚òâ8š°ÏÅß1
+J
+java:S1481S".Remove this unused "newConfig" local variable.(º–ÀA8°ÏÅß1
+O
+java:S1172["-Remove this unused method parameter "router".(åƒ¤øÿÿÿÿ8ºŠÿÅß1
