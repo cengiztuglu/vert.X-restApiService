@@ -12,19 +12,22 @@ import io.vertx.core.http.HttpServerOptions;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.impl.logging.Logger;
 import io.vertx.core.impl.logging.LoggerFactory;
+import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
 
 
-public class MainService  {
-    private  final Router router;
-    public static Vertx vertx;
+public class MainService {
+    private final Router router;
+    private static Vertx vertx;
     private static final Logger logger = LoggerFactory.getLogger(MainService.class);
+
     public MainService(Vertx vertx) {
-        MainService.vertx = vertx;
 
         this.router = Router.router(MainService.vertx);
+        vertx.deployVerticle(PayItemVerticle.class.getName());
+
 
     }
 
@@ -63,8 +66,6 @@ public class MainService  {
 
                 String httpHost = config.getJsonObject("Server").getString("host");
                 int port = config.getJsonObject("Server").getInteger("port");
-                System.out.println( httpHost);
-                System.out.println( port);
                 HttpServerOptions httpServerOptions = new HttpServerOptions();
                 httpServerOptions.setHost(httpHost);
                 httpServerOptions.setPort(port);
@@ -72,7 +73,6 @@ public class MainService  {
                 HttpServer server = vertx.createHttpServer(httpServerOptions);
                 server.requestHandler(this.router).listen(port);
                 addRoutes(router);
-                vertx.deployVerticle(PayItemVerticle.class.getName());
 
 
             } else {
@@ -81,17 +81,17 @@ public class MainService  {
         });
         retriever.listen(configChange -> {
             JsonObject newConfig = configChange.getNewConfiguration();
-            logger.info("Configuration has been updated: {}");
+            logger.info(newConfig.encode());
 
         });
-
-
     }
-
     private void addRoutes(Router router) {
-        this.router.post("/payitem").handler(this::handleHttpPostPayItem);
+        router.post("/payitem").handler(this::handleHttpPostPayItem);
+        router.get("/payitemList").handler(this::handleHttpGetPayItems);
+        router.put("/payItemUpdate/:payItemId").handler(this::handleHttpPutPayItemUpdate);
 
     }
+
 
     private void handleHttpPostPayItem(RoutingContext routingContext) {
         HttpServerRequest request = routingContext.request();
@@ -109,11 +109,11 @@ public class MainService  {
                             responseJson = new JsonObject((String) body);
                         } catch (Exception e) {
                             responseJson = new JsonObject()
-                                    .put("responseCode", 500)
-                                    .put("responseDescription", "Internal Server Error")
-                                    .put("responseDetail", "Error parsing JSON response");
+                                    .put(Constant.RESPONSECOD, 500)
+                                    .put(Constant.RESPONDESC, Constant.INTERNALS)
+                                    .put(Constant.RESPONSEDETAIL, Constant.ERRORPARS);
                             routingContext.response()
-                                    .putHeader("content-type", "application/json")
+                                    .putHeader(Constant.CONTENT, Constant.APPLICATION)
                                     .setStatusCode(500)
                                     .end(responseJson.encode());
                             return;
@@ -122,18 +122,18 @@ public class MainService  {
                         responseJson = (JsonObject) body;
                     } else {
                         responseJson = new JsonObject()
-                                .put("responseCode", 500)
-                                .put("responseDescription", "Internal Server Error")
-                                .put("responseDetail", "Unknown response format");
+                                .put(Constant.RESPONSECOD, 500)
+                                .put(Constant.RESPONDESC, Constant.INTERNALS)
+                                .put(Constant.RESPONSEDETAIL, "Unknown response format");
                         routingContext.response()
-                                .putHeader("content-type", "application/json")
+                                .putHeader(Constant.CONTENT, Constant.APPLICATION)
                                 .setStatusCode(500)
                                 .end(responseJson.encode());
                         return;
                     }
 
                     routingContext.response()
-                            .putHeader("content-type", "application/json")
+                            .putHeader(Constant.CONTENT, Constant.APPLICATION)
                             .end(responseJson.encode());
                 }
             });
@@ -141,5 +141,81 @@ public class MainService  {
     }
 
 
+    private void handleHttpGetPayItems(RoutingContext routingContext) {
+        vertx.eventBus().request(Constant.ITEMLIST, "", reply -> {
+            if (reply.succeeded()) {
+                Object body = reply.result().body();
+
+                if (body instanceof String) {
+                    String responseBody = (String) body;
+                    try {
+                        JsonArray responseArray = new JsonArray(responseBody);
+
+                        JsonObject responseJson = new JsonObject().put("items", responseArray);
+
+                        routingContext.response()
+                                .putHeader(Constant.CONTENT, Constant.APPLICATION)
+                                .end(responseJson.encode());
+                    } catch (Exception e) {
+                        routingContext.fail(500);
+                    }
+                } else {
+                    routingContext.fail(500);
+                }
+            }
+        });
+    }
+
+
+    private void handleHttpPutPayItemUpdate(RoutingContext routingContext) {
+        HttpServerRequest request = routingContext.request();
+        String payItemId = routingContext.request().getParam("payItemId");
+
+        request.bodyHandler(buffer -> {
+            JsonObject payItemJson = new JsonObject(buffer.toString());
+            payItemJson.put("payId", Integer.parseInt(payItemId));
+
+            vertx.eventBus().request(Constant.ITEMPUT, payItemJson.encode(), reply -> {
+                if (reply.succeeded()) {
+                    Object body = reply.result().body();
+
+                    JsonObject responseJson;
+                    if (body instanceof String) {
+                        try {
+                            responseJson = new JsonObject((String) body);
+                        } catch (Exception e) {
+                            responseJson = new JsonObject()
+                                    .put(Constant.RESPONSECOD, 500)
+                                    .put(Constant.RESPONDESC, Constant.INTERNALS)
+                                    .put(Constant.RESPONSEDETAIL, "Error parsing JSON response");
+                            routingContext.response()
+                                    .putHeader(Constant.CONTENT, Constant.APPLICATION)
+                                    .setStatusCode(500)
+                                    .end(responseJson.encode());
+                            return;
+                        }
+                    } else if (body instanceof JsonObject) {
+                        responseJson = (JsonObject) body;
+                    } else {
+                        responseJson = new JsonObject()
+                                .put(Constant.RESPONSECOD, 500)
+                                .put(Constant.RESPONDESC,Constant.INTERNALS)
+                                .put(Constant.RESPONSEDETAIL, "Unknown response format");
+                        routingContext.response()
+                                .putHeader(Constant.CONTENT, Constant.APPLICATION)
+                                .setStatusCode(500)
+                                .end(responseJson.encode());
+                        return;
+                    }
+
+                    routingContext.response()
+                            .putHeader(Constant.CONTENT, Constant.APPLICATION)
+                            .end(responseJson.encode());
+                } else {
+                    routingContext.fail(500);
+                }
+            });
+        });
+    }
 
 }

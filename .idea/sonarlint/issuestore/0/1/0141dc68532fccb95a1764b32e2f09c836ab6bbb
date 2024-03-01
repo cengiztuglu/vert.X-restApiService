@@ -1,0 +1,11 @@
+
+m
+java:S1104"QMake vertx a static final constant or non-public and provide accessors if needed.(»´N8ßÇùĞß1
+G
+java:S1444"+Make this "public static vertx" field final(»´N8ßÇùĞß1
+y
+java:S3077"WUse a thread-safe type; adding "volatile" is not enough to make this field thread-safe.(¦ÒÃ²üÿÿÿÿ8åÇùĞß1
+?
+java:S3010""Remove this assignment of "vertx".(è€ç„8æÇùĞß1
+N
+java:S1602t",Remove useless curly braces around statement(¸şÖùÿÿÿÿ8óÇùĞß1

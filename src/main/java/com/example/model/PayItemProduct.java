@@ -3,12 +3,13 @@ package com.example.model;
 import io.vertx.core.json.JsonObject;
 
 public class PayItemProduct {
-    private int payId;
+    private Integer payId;
     private String type;
     private double amount;
 
-    public PayItemProduct(String type, Double amount) {
+    public PayItemProduct(String type,Integer payId, Double amount) {
         this.type = type;
+        this.payId=payId;
         this.amount = amount;
     }
 
@@ -45,11 +46,13 @@ public class PayItemProduct {
 
         String type = json.getString("type");
         Double amount = json.getDouble("amount");
+       Integer payId = json.getInteger("payId");
+
 
         if (type == null || amount == null) {
             return null;
         }
 
-        return new PayItemProduct(type, amount);
+        return new PayItemProduct(type,payId,amount);
     }
 }

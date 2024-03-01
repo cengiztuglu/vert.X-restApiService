@@ -23,7 +23,6 @@ public class Response {
         return responseDetail;
     }
 
-    // toJson metodunu ekleyelim
     public String toJson() {
         return "{" +
                 "\"responseCode\":\"" + responseCode + "\"," +
