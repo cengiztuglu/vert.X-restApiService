@@ -86,59 +86,15 @@ public class MainService {
         });
     }
     private void addRoutes(Router router) {
-        router.post("/payitem").handler(this::handleHttpPostPayItem);
-        router.get("/payitemList").handler(this::handleHttpGetPayItems);
-        router.put("/payItemUpdate/:payItemId").handler(this::handleHttpPutPayItemUpdate);
+        router.post("/payItem").handler(this::handleHttpPostPayItem);
+        router.get("/payItem").handler(this::handleHttpGetPayItems);
+        router.put("/payItem/:payItemId").handler(this::handleHttpPutPayItemUpdate);
+        router.delete("/payItem/:payItemId").handler(this::handleHttpDelete);
+
 
     }
 
 
-    private void handleHttpPostPayItem(RoutingContext routingContext) {
-        HttpServerRequest request = routingContext.request();
-
-        request.bodyHandler(buffer -> {
-            JsonObject payItemJson = new JsonObject(buffer.toString());
-
-            vertx.eventBus().request(Constant.ITEMADD, payItemJson.encode(), reply -> {
-                if (reply.succeeded()) {
-                    Object body = reply.result().body();
-
-                    JsonObject responseJson;
-                    if (body instanceof String) {
-                        try {
-                            responseJson = new JsonObject((String) body);
-                        } catch (Exception e) {
-                            responseJson = new JsonObject()
-                                    .put(Constant.RESPONSECOD, 500)
-                                    .put(Constant.RESPONDESC, Constant.INTERNALS)
-                                    .put(Constant.RESPONSEDETAIL, Constant.ERRORPARS);
-                            routingContext.response()
-                                    .putHeader(Constant.CONTENT, Constant.APPLICATION)
-                                    .setStatusCode(500)
-                                    .end(responseJson.encode());
-                            return;
-                        }
-                    } else if (body instanceof JsonObject) {
-                        responseJson = (JsonObject) body;
-                    } else {
-                        responseJson = new JsonObject()
-                                .put(Constant.RESPONSECOD, 500)
-                                .put(Constant.RESPONDESC, Constant.INTERNALS)
-                                .put(Constant.RESPONSEDETAIL, "Unknown response format");
-                        routingContext.response()
-                                .putHeader(Constant.CONTENT, Constant.APPLICATION)
-                                .setStatusCode(500)
-                                .end(responseJson.encode());
-                        return;
-                    }
-
-                    routingContext.response()
-                            .putHeader(Constant.CONTENT, Constant.APPLICATION)
-                            .end(responseJson.encode());
-                }
-            });
-        });
-    }
 
 
     private void handleHttpGetPayItems(RoutingContext routingContext) {
@@ -167,6 +123,15 @@ public class MainService {
     }
 
 
+    private void handleHttpPostPayItem(RoutingContext routingContext) {
+        HttpServerRequest request = routingContext.request();
+
+        request.bodyHandler(buffer -> {
+            JsonObject payItemJson = new JsonObject(buffer.toString());
+            processEventBusRequest(routingContext, Constant.ITEMADD, payItemJson);
+        });
+    }
+
     private void handleHttpPutPayItemUpdate(RoutingContext routingContext) {
         HttpServerRequest request = routingContext.request();
         String payItemId = routingContext.request().getParam("payItemId");
@@ -174,48 +139,59 @@ public class MainService {
         request.bodyHandler(buffer -> {
             JsonObject payItemJson = new JsonObject(buffer.toString());
             payItemJson.put("payId", Integer.parseInt(payItemId));
-
-            vertx.eventBus().request(Constant.ITEMPUT, payItemJson.encode(), reply -> {
-                if (reply.succeeded()) {
-                    Object body = reply.result().body();
-
-                    JsonObject responseJson;
-                    if (body instanceof String) {
-                        try {
-                            responseJson = new JsonObject((String) body);
-                        } catch (Exception e) {
-                            responseJson = new JsonObject()
-                                    .put(Constant.RESPONSECOD, 500)
-                                    .put(Constant.RESPONDESC, Constant.INTERNALS)
-                                    .put(Constant.RESPONSEDETAIL, "Error parsing JSON response");
-                            routingContext.response()
-                                    .putHeader(Constant.CONTENT, Constant.APPLICATION)
-                                    .setStatusCode(500)
-                                    .end(responseJson.encode());
-                            return;
-                        }
-                    } else if (body instanceof JsonObject) {
-                        responseJson = (JsonObject) body;
-                    } else {
-                        responseJson = new JsonObject()
-                                .put(Constant.RESPONSECOD, 500)
-                                .put(Constant.RESPONDESC,Constant.INTERNALS)
-                                .put(Constant.RESPONSEDETAIL, "Unknown response format");
-                        routingContext.response()
-                                .putHeader(Constant.CONTENT, Constant.APPLICATION)
-                                .setStatusCode(500)
-                                .end(responseJson.encode());
-                        return;
-                    }
-
-                    routingContext.response()
-                            .putHeader(Constant.CONTENT, Constant.APPLICATION)
-                            .end(responseJson.encode());
-                } else {
-                    routingContext.fail(500);
-                }
-            });
+            processEventBusRequest(routingContext, Constant.ITEMPUT, payItemJson);
         });
     }
 
+
+    private void handleHttpDelete(RoutingContext routingContext)
+    {
+        HttpServerRequest request=routingContext.request();
+        Long payItemId= Long.valueOf(routingContext.request().getParam("payItemId"));
+        request.bodyHandler(buffer->{
+            JsonObject payItemJson=new JsonObject(buffer.toString());
+            payItemJson.put("payId",Integer.parseInt(String.valueOf(payItemId)));
+            processEventBusRequest(routingContext,Constant.ITEMDELETE,payItemJson);
+        });
+    }
+
+
+
+    private void processEventBusRequest(RoutingContext routingContext, String eventBusAddress, JsonObject payload) {
+        vertx.eventBus().request(eventBusAddress, payload.encode(), reply -> {
+            if (reply.succeeded()) {
+                handleEventBusSuccess(routingContext, reply.result().body());
+            } else {
+                routingContext.fail(500);
+            }
+        });
+    }
+
+    private void handleEventBusSuccess(RoutingContext routingContext, Object body) {
+        JsonObject responseJson = createResponseJson(body);
+        routingContext.response()
+                .putHeader(Constant.CONTENT, Constant.APPLICATION)
+                .end(responseJson.encode());
+    }
+
+    private JsonObject createResponseJson(Object body) {
+        if (body instanceof String) {
+            try {
+                return new JsonObject((String) body);
+            } catch (Exception e) {
+                return createErrorResponseJson("Error parsing JSON response");
+            }
+        } else if (body instanceof JsonObject) {
+            return (JsonObject) body;
+        } else {
+            return createErrorResponseJson("Unknown response format");
+        }
+    }
+
+    private JsonObject createErrorResponseJson(String errorDetail) {
+        return new JsonObject()
+                .put(Constant.RESPONSECOD, 500)
+                .put(Constant.RESPONDESC, Constant.INTERNALS)
+                .put(Constant.RESPONSEDETAIL, errorDetail);
+    }
 }

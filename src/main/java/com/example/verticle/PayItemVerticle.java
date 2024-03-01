@@ -9,6 +9,7 @@ import io.vertx.core.Promise;
 import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.eventbus.Message;
 
+import io.vertx.core.json.DecodeException;
 import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonObject;
 
@@ -24,6 +25,7 @@ public class PayItemVerticle extends AbstractVerticle {
 
         eventBus.consumer(Constant.ITEMADD, this::handleAddPayItem);
         eventBus.consumer(Constant.ITEMPUT,this::handleUpdatePayItem);
+        eventBus.consumer(Constant.ITEMDELETE,this::handleDeletePayItem);
     }
 
 
@@ -69,4 +71,34 @@ public class PayItemVerticle extends AbstractVerticle {
     }
 
 
+
+    private void handleDeletePayItem(Message<String> message) {
+        String payItemIdString = message.body();
+
+        try {
+            JsonObject payItemJson = new JsonObject(payItemIdString);
+
+            int payItemId = payItemJson.getInteger("payId");
+
+            MySQLManager.getInstance().deletePayItem(payItemId, result -> {
+                if (result.succeeded()) {
+                    Response successResponse = new Response(0, "PayItemProduct Silme başarılı", "PayItemProduct ID: " + payItemId);
+                    message.reply(successResponse.toJson());
+                } else {
+                    Response errorResponse = new Response(500, "PayItemProduct silme sırasında bir hata oluştu", result.cause().getMessage());
+                    message.reply(errorResponse.toJson());
+                }
+            });
+        } catch (DecodeException e) {
+            Response errorResponse = new Response(400, "Geçersiz JSON formatı", e.getMessage());
+            message.reply(errorResponse.toJson());
+        }
+    }
+
+
 }
+
+
+
+
+

@@ -162,7 +162,7 @@ public class MySQLManager {
         });
     }
 
-public  void  deletePayItem(Integer payItemId,Handler<AsyncResult<Long>>resultHandler)
+public  void  deletePayItem(int payItemId,Handler<AsyncResult<Long>>resultHandler)
 {
     databasePool.getConnection(conn->{
         if (conn.succeeded())

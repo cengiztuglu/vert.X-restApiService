@@ -4,6 +4,8 @@ public final class Constant {
     public static final String ITEMADD = "itemADD";
     public static  final String ITEMLIST="itemList";
     public static  final String ITEMPUT="itemPUT";
+    public static  final String ITEMDELETE="itemDelete";
+
     public static  final String RESPONSECOD="responseCode";
     public static  final String RESPONDESC="responseDescription";
     public static  final String RESPONSEDETAIL="responseDetail";
@@ -17,6 +19,7 @@ public final class Constant {
     public  static final  String SQLINSERT="INSERT INTO pay_item ( type, amount) VALUES ( ?, ?)";
 
     public  static final  String SQLDELETE= "DELETE FROM pay_item WHERE payId = ?";
+
 
 
 
