@@ -15,6 +15,8 @@ import io.vertx.mysqlclient.MySQLConnectOptions;
 import io.vertx.mysqlclient.MySQLPool;
 import io.vertx.sqlclient.*;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 public class MySQLManager {
@@ -71,6 +73,8 @@ public class MySQLManager {
         });
     }
 
+
+
     public void addPayItemProductToDatabase(PayItemProduct payItemProduct, Handler<AsyncResult<Long>> resultHandler) {
         databasePool.getConnection(conn -> {
             if (conn.succeeded()) {
@@ -82,16 +86,13 @@ public class MySQLManager {
                 PreparedQuery<RowSet<Row>> preparedQuery = connection.preparedQuery(sql);
                 preparedQuery.execute(params, res -> {
                     if (res.succeeded()) {
-                        // İşlem başarılı, eklenen kaydın ID'sini döndür
                         resultHandler.handle(Future.succeededFuture(res.result().property(MySQLClient.LAST_INSERTED_ID)));
                     } else {
-                        // İşlem başarısız, hata mesajını döndür
                         resultHandler.handle(Future.failedFuture(res.cause()));
                     }
                     connection.close();
                 });
             } else {
-                // Veritabanına bağlanılamadı
                 resultHandler.handle(Future.failedFuture(conn.cause()));
             }
         });
@@ -99,5 +100,38 @@ public class MySQLManager {
 
 
 
+    public void getPayItemProductsFromDatabase(Handler<AsyncResult<List<PayItemProduct>>> resultHandler) {
+        databasePool.getConnection(conn -> {
+            if (conn.succeeded()) {
+                SqlConnection connection = conn.result();
+
+                connection.query("SELECT * FROM pay_item").execute(queryResult -> {
+                    if (queryResult.succeeded()) {
+                        List<PayItemProduct> payItemProducts = new ArrayList<>();
+                        RowSet<Row> rows = queryResult.result();
+
+                        if (rows.iterator().hasNext()) {
+                            for (Row row : rows) {
+                                PayItemProduct payItemProduct = PayItemProduct.fromJson(row.toJson());
+                                payItemProducts.add(payItemProduct);
+                            }
+                            resultHandler.handle(Future.succeededFuture(payItemProducts));
+                        } else {
+                            resultHandler.handle(Future.failedFuture("RowSet is empty"));
+                        }
+                    } else {
+                        resultHandler.handle(Future.failedFuture(queryResult.cause()));
+                    }
+
+                    connection.close();
+                });
+            } else {
+                resultHandler.handle(Future.failedFuture(conn.cause()));
+            }
+        });
     }
+
+
 }
+
+
