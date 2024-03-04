@@ -81,16 +81,20 @@ public class MySQLManager {
             if (conn.succeeded()) {
                 SqlConnection connection = conn.result();
 
-                String sql;
+                String sqlCheck;
+                String sqlInsert;
                 Tuple params;
+
 
                 if (product instanceof PayItemProduct) {
                     PayItemProduct payItemProduct = (PayItemProduct) product;
-                    sql = PayItemConst.SQLINSERT;
+                    sqlCheck = PayItemConst.SQLCHECK;
+                    sqlInsert = PayItemConst.SQLINSERT;
                     params = Tuple.of(payItemProduct.getType(), payItemProduct.getAmount());
                 } else if (product instanceof SaleItemProduct) {
                     SaleItemProduct saleItemProduct = (SaleItemProduct) product;
-                    sql = SaleItemConst.SQLINSERT;
+                    sqlCheck = SaleItemConst.SQLCHECK;
+                    sqlInsert = SaleItemConst.SQLINSERT;
                     params = Tuple.of(saleItemProduct.getItemName(), saleItemProduct.getPrice(), saleItemProduct.getVat());
                 } else {
                     resultHandler.handle(Future.failedFuture("Unsupported product type"));
@@ -98,21 +102,42 @@ public class MySQLManager {
                     return;
                 }
 
-                PreparedQuery<RowSet<Row>> preparedQuery = connection.preparedQuery(sql);
-                preparedQuery.execute(params, res -> {
-                    if (res.succeeded()) {
-                        resultHandler.handle(Future.succeededFuture(res.result().property(MySQLClient.LAST_INSERTED_ID)));
-                    } else {
+                PreparedQuery<RowSet<Row>> preparedQueryCheckIfExists = connection.preparedQuery(sqlCheck);
+                preparedQueryCheckIfExists.execute(params, resCheck -> {
+                    if (resCheck.succeeded()) {
+                        RowSet<Row> rowsCheck = resCheck.result();
 
-                        resultHandler.handle(Future.failedFuture(res.cause()));
+                        if (rowsCheck.iterator().hasNext()) {
+                            long count = rowsCheck.iterator().next().getLong(0);
+
+                            if (count > 0) {
+                                resultHandler.handle(Future.failedFuture("Item already exists"));
+                                connection.close();
+                                return;
+                            }
+                        }
+
+                        PreparedQuery<RowSet<Row>> preparedQueryInsert = connection.preparedQuery(sqlInsert);
+                        preparedQueryInsert.execute(params, resInsert -> {
+                            if (resInsert.succeeded()) {
+                                resultHandler.handle(Future.succeededFuture(resInsert.result().property(MySQLClient.LAST_INSERTED_ID)));
+                            } else {
+                                resultHandler.handle(Future.failedFuture(resInsert.cause()));
+                            }
+                            connection.close();
+                        });
+                    } else {
+                        resultHandler.handle(Future.failedFuture(resCheck.cause()));
+                        connection.close();
                     }
-                    connection.close();
                 });
             } else {
                 resultHandler.handle(Future.failedFuture(conn.cause()));
             }
         });
     }
+
+
 
 
     private <T> void getProductsFromDatabase(String tableName, Class<T> productClass, Handler<AsyncResult<List<T>>> resultHandler) {

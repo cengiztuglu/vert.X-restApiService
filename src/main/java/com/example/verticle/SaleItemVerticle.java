@@ -57,20 +57,26 @@ public class SaleItemVerticle extends AbstractVerticle
 
     private void handleUpdateSaleItem(Message<String> message) {
         String saleItemJsonString = message.body();
-
+try {
         JsonObject saleItemJson = new JsonObject(saleItemJsonString);
 
-        Long saleItemId = saleItemJson.getLong("saleItemId");
+        Long saleItemId = saleItemJson.getLong("itemId");
 
         MySQLManager.getInstance().updateProductToDatabase(SaleItemProduct.fromJson(saleItemJson), result -> {
             if (result.succeeded()) {
-                Response successResponse = new Response(0, "saleItemProduct Güncelleme başarılı", "PayItemProduct ID: " + saleItemId);
+                Response successResponse = new Response(0, "saleItemProduct Güncelleme başarılı", "saleItemProduct ID: " + saleItemId);
                 message.reply(successResponse.toJson());
             } else {
                 Response errorResponse = new Response(500, "saleItemProduct güncelleme sırasında bir hata oluştu", result.cause().getMessage());
                 message.reply(errorResponse.toJson());
             }
+
         });
+    }
+    catch (DecodeException e) {
+    Response errorResponse = new Response(400, "Geçersiz JSON formatı", e.getMessage());
+    message.reply(errorResponse.toJson());
+}
     }
 
 

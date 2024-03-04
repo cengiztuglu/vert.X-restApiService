@@ -1,9 +1,11 @@
 
 y
-java:S3077"WUse a thread-safe type; adding "volatile" is not enough to make this field thread-safe.(¦ÒÃ²üÿÿÿÿ8¢íÛÊà1
+java:S3077"WUse a thread-safe type; adding "volatile" is not enough to make this field thread-safe.(¦ÒÃ²üÿÿÿÿ8¬¦÷Ìà1
 ?
-java:S3010 ""Remove this assignment of "vertx".(è€ç„8£íÛÊà1
+java:S3010 ""Remove this assignment of "vertx".(è€ç„8­¦÷Ìà1
+o
+java:S3776O"RRefactor this method to reduce its Cognitive Complexity from 31 to the 15 allowed.(§´ ú8µ¦÷Ìà1
 u
-java:S3776¥"RRefactor this method to reduce its Cognitive Complexity from 18 to the 15 allowed.(ŠñÁÿÿÿÿÿ8»©àÊà1
+java:S3776¾"RRefactor this method to reduce its Cognitive Complexity from 18 to the 15 allowed.(ŠñÁÿÿÿÿÿ8¼¦÷Ìà1
 p
-java:S3776Ğ"RRefactor this method to reduce its Cognitive Complexity from 19 to the 15 allowed.(—Œï8²íÛÊà1
+java:S3776é"RRefactor this method to reduce its Cognitive Complexity from 19 to the 15 allowed.(—Œï8¾¦÷Ìà1

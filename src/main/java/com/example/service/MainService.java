@@ -181,12 +181,12 @@ public class MainService {
 
     private void handleHttpPutSaleItemUpdate(RoutingContext routingContext) {
         HttpServerRequest request = routingContext.request();
-        String payItemId = routingContext.request().getParam("saleItemId");
+        String saleItemId = routingContext.request().getParam("saleItemId");
 
         request.bodyHandler(buffer -> {
-            JsonObject payItemJson = new JsonObject(buffer.toString());
-            payItemJson.put("itemId", Integer.parseInt(payItemId));
-            processEventBusRequest(routingContext, SaleItemConst.ITEMPUT, payItemJson);
+            JsonObject saleItemJson = new JsonObject(buffer.toString());
+            saleItemJson.put("itemId", Integer.parseInt(saleItemId));
+            processEventBusRequest(routingContext, SaleItemConst.ITEMPUT, saleItemJson);
         });
     }
 

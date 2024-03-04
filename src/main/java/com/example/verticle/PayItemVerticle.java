@@ -57,19 +57,26 @@ public class PayItemVerticle extends AbstractVerticle {
 
     private void handleUpdatePayItem(Message<String> message) {
         String payItemJsonString = message.body();
-        JsonObject payItemJson = new JsonObject(payItemJsonString);
-        Long payItemId = payItemJson.getLong("payItemId");
+        try {
 
 
-        MySQLManager.getInstance().updateProductToDatabase(PayItemProduct.fromJson(payItemJson), result -> {
-            if (result.succeeded()) {
-                Response successResponse = new Response(0, "PayItemProduct Güncelleme başarılı", "PayItemProduct ID: " +payItemId);
-                message.reply(successResponse.toJson());
-            } else {
-                Response errorResponse = new Response(500, "PayItemProduct güncelleme sırasında bir hata oluştu", result.cause().getMessage());
-                message.reply(errorResponse.toJson());
-            }
-        });
+            JsonObject payItemJson = new JsonObject(payItemJsonString);
+            Long payItemId = payItemJson.getLong("payItemId");
+
+
+            MySQLManager.getInstance().updateProductToDatabase(PayItemProduct.fromJson(payItemJson), result -> {
+                if (result.succeeded()) {
+                    Response successResponse = new Response(0, "PayItemProduct Güncelleme başarılı", "PayItemProduct ID: " + payItemId);
+                    message.reply(successResponse.toJson());
+                } else {
+                    Response errorResponse = new Response(500, "PayItemProduct güncelleme sırasında bir hata oluştu", result.cause().getMessage());
+                    message.reply(errorResponse.toJson());
+                }
+            });
+        }catch (DecodeException e) {
+            Response errorResponse = new Response(400, "Geçersiz JSON formatı", e.getMessage());
+            message.reply(errorResponse.toJson());
+        }
     }
 
 
