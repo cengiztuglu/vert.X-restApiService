@@ -50,7 +50,7 @@ public class PayItemProduct {
 
         String type = json.getString("type");
         Double amount = json.getDouble("amount");
-       Integer payId = json.getInteger("payId");
+       Integer payId = json.getInteger("itemId");
 
 
         if (type == null || amount == null) {

@@ -2,9 +2,7 @@ package com.example.verticle;
 
 import com.example.MySQLManager;
 import com.example.Response;
-import com.example.constants.PayItemConst;
 import com.example.constants.SaleItemConst;
-import com.example.model.PayItemProduct;
 import com.example.model.SaleItemProduct;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Promise;
@@ -85,7 +83,7 @@ try {
         String saleItemIdString = message.body();
         try {
             JsonObject saleItemJson = new JsonObject(saleItemIdString);
-            Long saleItemId = saleItemJson.getLong("saleItemId");
+            Long saleItemId = saleItemJson.getLong("itemId");
 
             MySQLManager.getInstance().deleteProductFromDatabase(saleItemId, SaleItemProduct.class, result -> {
                 if (result.succeeded()) {

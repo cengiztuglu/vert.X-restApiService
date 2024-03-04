@@ -67,7 +67,7 @@ public class MainService {
 
                 JsonObject config = ar.result();
 
-                logger.info("Received Configuration: {}");
+                logger.info("Received Configuration: {}"+config);
 
                 String httpHost = config.getJsonObject("Server").getString("host");
                 int port = config.getJsonObject("Server").getInteger("port");

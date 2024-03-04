@@ -61,7 +61,7 @@ public class PayItemVerticle extends AbstractVerticle {
 
 
             JsonObject payItemJson = new JsonObject(payItemJsonString);
-            Long payItemId = payItemJson.getLong("payItemId");
+            Long payItemId = payItemJson.getLong("itemId");
 
 
             MySQLManager.getInstance().updateProductToDatabase(PayItemProduct.fromJson(payItemJson), result -> {
@@ -87,7 +87,7 @@ public class PayItemVerticle extends AbstractVerticle {
         try {
             JsonObject saleItemJson = new JsonObject(payItemIdString);
 
-            long payItemId = saleItemJson.getLong("payId");
+            long payItemId = saleItemJson.getLong("itemId");
 
             MySQLManager.getInstance().deleteProductFromDatabase(payItemId, PayItemProduct.class, result -> {
                 if (result.succeeded()) {
