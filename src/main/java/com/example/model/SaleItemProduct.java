@@ -1,25 +1,35 @@
 package com.example.model;
 
-public class SaleItemProduct {
+import io.vertx.core.json.JsonObject;
 
+public class SaleItemProduct {
+private Integer itemId;
     private String itemName;
-    private double vat;
-    private double price;
+    private Double vat;
+    private Double price;
 
     public SaleItemProduct() {
     }
 
-    // Parametreli kurucu metod
-    public SaleItemProduct(String itemName, double vat, double price) {
+    public SaleItemProduct(Integer itemId,String itemName, Double vat, Double price) {
+        this.itemId=itemId;
         this.itemName = itemName;
         this.vat = vat;
         this.price = price;
     }
 
-    // Getter ve Setter metotları
+    public Integer getItemId() {
+        return itemId;
+    }
+
+    public void setItemId(Integer itemId) {
+        this.itemId = itemId;
+    }
+
     public String getItemName() {
         return itemName;
     }
+
 
     public void setItemName(String itemName) {
         this.itemName = itemName;
@@ -39,6 +49,25 @@ public class SaleItemProduct {
 
     public void setPrice(double price) {
         this.price = price;
+    }
+
+    public static SaleItemProduct fromJson(JsonObject json) {
+        if (json == null) {
+            return null;
+        }
+
+        Integer itemId = json.getInteger("itemId");
+        String itemName = json.getString("itemName");
+        Double vat = json.getDouble("vat");
+        Double price = json.getDouble("price");
+
+
+
+        if (price == null || vat== null || itemName==null) {
+            return null;
+        }
+
+        return new SaleItemProduct(itemId,itemName,vat,price);
     }
 
 

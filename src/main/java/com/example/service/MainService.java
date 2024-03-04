@@ -1,8 +1,11 @@
 package com.example.service;
 
-import com.example.Constant;
+import com.example.constants.PayItemConst;
+import com.example.constants.ResponseConst;
 import com.example.MySQLManager;
+import com.example.constants.SaleItemConst;
 import com.example.verticle.PayItemVerticle;
+import com.example.verticle.SaleItemVerticle;
 import io.vertx.config.ConfigRetriever;
 import io.vertx.config.ConfigRetrieverOptions;
 import io.vertx.config.ConfigStoreOptions;
@@ -27,6 +30,8 @@ public class MainService {
 
         this.router = Router.router(MainService.vertx);
         vertx.deployVerticle(PayItemVerticle.class.getName());
+        vertx.deployVerticle(SaleItemVerticle.class.getName());
+
 
 
     }
@@ -89,7 +94,13 @@ public class MainService {
         router.post("/payItem").handler(this::handleHttpPostPayItem);
         router.get("/payItem").handler(this::handleHttpGetPayItems);
         router.put("/payItem/:payItemId").handler(this::handleHttpPutPayItemUpdate);
-        router.delete("/payItem/:payItemId").handler(this::handleHttpDelete);
+            router.delete("/payItem/:payItemId").handler(this::handleHttpDelete);
+
+        router.post("/saleItem").handler(this::handleHttpPostSaleItem);
+        router.get("/saleItem").handler(this::handleHttpGetSaleItems);
+        router.put("/saleItem/:saleItemId").handler(this::handleHttpPutSaleItemUpdate);
+        router.delete("/saleItem/:saleItemId").handler(this::handleHttpSaleItemDelete);
+
 
 
     }
@@ -98,7 +109,7 @@ public class MainService {
 
 
     private void handleHttpGetPayItems(RoutingContext routingContext) {
-        vertx.eventBus().request(Constant.ITEMLIST, "", reply -> {
+        vertx.eventBus().request(PayItemConst.ITEMLIST, "", reply -> {
             if (reply.succeeded()) {
                 Object body = reply.result().body();
 
@@ -110,7 +121,7 @@ public class MainService {
                         JsonObject responseJson = new JsonObject().put("items", responseArray);
 
                         routingContext.response()
-                                .putHeader(Constant.CONTENT, Constant.APPLICATION)
+                                .putHeader(ResponseConst.CONTENT, ResponseConst.APPLICATION)
                                 .end(responseJson.encode());
                     } catch (Exception e) {
                         routingContext.fail(500);
@@ -123,14 +134,63 @@ public class MainService {
     }
 
 
+
+    private void handleHttpGetSaleItems(RoutingContext routingContext) {
+        vertx.eventBus().request(SaleItemConst.ITEMLIST, "", reply -> {
+            if (reply.succeeded()) {
+                Object body = reply.result().body();
+
+                if (body instanceof String) {
+                    String responseBody = (String) body;
+                    try {
+                        JsonArray responseArray = new JsonArray(responseBody);
+
+                        JsonObject responseJson = new JsonObject().put("items", responseArray);
+
+                        routingContext.response()
+                                .putHeader(ResponseConst.CONTENT, ResponseConst.APPLICATION)
+                                .end(responseJson.encode());
+                    } catch (Exception e) {
+                        routingContext.fail(500);
+                    }
+                } else {
+                    routingContext.fail(500);
+                }
+            }
+        });
+    }
+
+    private void handleHttpPostSaleItem(RoutingContext routingContext) {
+        HttpServerRequest request = routingContext.request();
+
+        request.bodyHandler(buffer -> {
+            JsonObject payItemJson = new JsonObject(buffer.toString());
+            processEventBusRequest(routingContext, SaleItemConst.ITEMADD, payItemJson);
+        });
+    }
+
+
     private void handleHttpPostPayItem(RoutingContext routingContext) {
         HttpServerRequest request = routingContext.request();
 
         request.bodyHandler(buffer -> {
             JsonObject payItemJson = new JsonObject(buffer.toString());
-            processEventBusRequest(routingContext, Constant.ITEMADD, payItemJson);
+            processEventBusRequest(routingContext, PayItemConst.ITEMADD, payItemJson);
         });
     }
+
+    private void handleHttpPutSaleItemUpdate(RoutingContext routingContext) {
+        HttpServerRequest request = routingContext.request();
+        String payItemId = routingContext.request().getParam("saleItemId");
+
+        request.bodyHandler(buffer -> {
+            JsonObject payItemJson = new JsonObject(buffer.toString());
+            payItemJson.put("itemId", Integer.parseInt(payItemId));
+            processEventBusRequest(routingContext, SaleItemConst.ITEMPUT, payItemJson);
+        });
+    }
+
+
 
     private void handleHttpPutPayItemUpdate(RoutingContext routingContext) {
         HttpServerRequest request = routingContext.request();
@@ -139,10 +199,19 @@ public class MainService {
         request.bodyHandler(buffer -> {
             JsonObject payItemJson = new JsonObject(buffer.toString());
             payItemJson.put("payId", Integer.parseInt(payItemId));
-            processEventBusRequest(routingContext, Constant.ITEMPUT, payItemJson);
+            processEventBusRequest(routingContext, PayItemConst.ITEMPUT, payItemJson);
         });
     }
-
+    private void handleHttpSaleItemDelete(RoutingContext routingContext)
+    {
+        HttpServerRequest request=routingContext.request();
+        Long saleItemId= Long.valueOf(routingContext.request().getParam("saleItemId"));
+        request.bodyHandler(buffer->{
+            JsonObject payItemJson=new JsonObject(buffer.toString());
+            payItemJson.put("saleItemId",Integer.parseInt(String.valueOf(saleItemId)));
+            processEventBusRequest(routingContext, SaleItemConst.ITEMDELETE,payItemJson);
+        });
+    }
 
     private void handleHttpDelete(RoutingContext routingContext)
     {
@@ -151,7 +220,7 @@ public class MainService {
         request.bodyHandler(buffer->{
             JsonObject payItemJson=new JsonObject(buffer.toString());
             payItemJson.put("payId",Integer.parseInt(String.valueOf(payItemId)));
-            processEventBusRequest(routingContext,Constant.ITEMDELETE,payItemJson);
+            processEventBusRequest(routingContext, PayItemConst.ITEMDELETE,payItemJson);
         });
     }
 
@@ -170,7 +239,7 @@ public class MainService {
     private void handleEventBusSuccess(RoutingContext routingContext, Object body) {
         JsonObject responseJson = createResponseJson(body);
         routingContext.response()
-                .putHeader(Constant.CONTENT, Constant.APPLICATION)
+                .putHeader(ResponseConst.CONTENT, ResponseConst.APPLICATION)
                 .end(responseJson.encode());
     }
 
@@ -190,8 +259,8 @@ public class MainService {
 
     private JsonObject createErrorResponseJson(String errorDetail) {
         return new JsonObject()
-                .put(Constant.RESPONSECOD, 500)
-                .put(Constant.RESPONDESC, Constant.INTERNALS)
-                .put(Constant.RESPONSEDETAIL, errorDetail);
+                .put(ResponseConst.RESPONSECOD, 500)
+                .put(ResponseConst.RESPONDESC, ResponseConst.INTERNALS)
+                .put(ResponseConst.RESPONSEDETAIL, errorDetail);
     }
 }

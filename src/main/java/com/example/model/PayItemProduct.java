@@ -5,8 +5,12 @@ import io.vertx.core.json.JsonObject;
 public class PayItemProduct {
     private Integer payId;
     private String type;
-    private double amount;
+    private Double amount;
 
+    public PayItemProduct()
+    {
+
+    }
     public PayItemProduct(String type,Integer payId, Double amount) {
         this.type = type;
         this.payId=payId;

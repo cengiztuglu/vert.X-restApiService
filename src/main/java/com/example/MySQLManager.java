@@ -1,6 +1,9 @@
 package com.example;
 
+import com.example.constants.PayItemConst;
+import com.example.constants.SaleItemConst;
 import com.example.model.PayItemProduct;
+import com.example.model.SaleItemProduct;
 import io.vertx.config.ConfigRetriever;
 import io.vertx.config.ConfigRetrieverOptions;
 import io.vertx.config.ConfigStoreOptions;
@@ -23,7 +26,7 @@ public class MySQLManager {
     public static final String DATABASE = "database";
     private static volatile MySQLManager thisInstance;
     private static Pool databasePool;
-    public static Vertx vertx;
+    private static Vertx vertx;
 
     public MySQLManager(Vertx vertx) {
         MySQLManager.vertx = vertx;
@@ -73,19 +76,34 @@ public class MySQLManager {
     }
 
 
-    public void addPayItemProductToDatabase(PayItemProduct payItemProduct, Handler<AsyncResult<Long>> resultHandler) {
+    public <T> void addProductToDatabase(T product, Handler<AsyncResult<Long>> resultHandler) {
         databasePool.getConnection(conn -> {
             if (conn.succeeded()) {
                 SqlConnection connection = conn.result();
 
-                String sql = Constant.SQLINSERT;
-                Tuple params = Tuple.of(payItemProduct.getType(), payItemProduct.getAmount());
+                String sql;
+                Tuple params;
+
+                if (product instanceof PayItemProduct) {
+                    PayItemProduct payItemProduct = (PayItemProduct) product;
+                    sql = PayItemConst.SQLINSERT;
+                    params = Tuple.of(payItemProduct.getType(), payItemProduct.getAmount());
+                } else if (product instanceof SaleItemProduct) {
+                    SaleItemProduct saleItemProduct = (SaleItemProduct) product;
+                    sql = SaleItemConst.SQLINSERT;
+                    params = Tuple.of(saleItemProduct.getItemName(), saleItemProduct.getPrice(), saleItemProduct.getVat());
+                } else {
+                    resultHandler.handle(Future.failedFuture("Unsupported product type"));
+                    connection.close();
+                    return;
+                }
 
                 PreparedQuery<RowSet<Row>> preparedQuery = connection.preparedQuery(sql);
                 preparedQuery.execute(params, res -> {
                     if (res.succeeded()) {
                         resultHandler.handle(Future.succeededFuture(res.result().property(MySQLClient.LAST_INSERTED_ID)));
                     } else {
+
                         resultHandler.handle(Future.failedFuture(res.cause()));
                     }
                     connection.close();
@@ -97,7 +115,7 @@ public class MySQLManager {
     }
 
 
-    public void getPayItemProductsFromDatabase(Handler<AsyncResult<List<PayItemProduct>>> resultHandler) {
+    private <T> void getProductsFromDatabase(String tableName, Class<T> productClass, Handler<AsyncResult<List<T>>> resultHandler) {
         databasePool.getConnection(conn -> {
             if (conn.failed()) {
                 resultHandler.handle(Future.failedFuture(conn.cause()));
@@ -105,18 +123,22 @@ public class MySQLManager {
             }
 
             SqlConnection connection = conn.result();
-            String sql = Constant.SQLSELECT;
+            String sql = "SELECT * FROM " + tableName;
 
             connection.query(sql).execute(queryResult -> {
                 if (queryResult.succeeded()) {
-                    List<PayItemProduct> payItemProducts = new ArrayList<>();
+                    List<T> products = new ArrayList<>();
                     RowSet<Row> rows = queryResult.result();
 
                     if (rows.iterator().hasNext()) {
                         rows.forEach(row -> {
-                            payItemProducts.add(PayItemProduct.fromJson(row.toJson()));
+                            JsonObject json = row.toJson();
+
+                            T product = json.mapTo(productClass);
+
+                            products.add(product);
                         });
-                        resultHandler.handle(Future.succeededFuture(payItemProducts));
+                        resultHandler.handle(Future.succeededFuture(products));
                     } else {
                         resultHandler.handle(Future.failedFuture("RowSet is empty"));
                     }
@@ -129,64 +151,99 @@ public class MySQLManager {
         });
     }
 
+    public void getSaleItemProductsFromDatabase(Handler<AsyncResult<List<SaleItemProduct>>> resultHandler) {
+        getProductsFromDatabase(SaleItemConst.TABLE_NAME, SaleItemProduct.class, resultHandler);
+    }
 
-    public void updatePayItemProduct(PayItemProduct payItemProduct, Handler<AsyncResult<Long>> resultHandler) {
+    public void getPayItemProductsFromDatabase(Handler<AsyncResult<List<PayItemProduct>>> resultHandler) {
+        getProductsFromDatabase(PayItemConst.TABLE_NAME, PayItemProduct.class, resultHandler);
+    }
+
+
+
+
+    public <T> void updateProductToDatabase(T product, Handler<AsyncResult<Long>> resultHandler) {
         databasePool.getConnection(conn -> {
             if (conn.succeeded()) {
                 SqlConnection connection = conn.result();
+                String sql;
+                Tuple params;
+                if (product instanceof PayItemProduct) {
+                    PayItemProduct payItemProduct = (PayItemProduct) product;
+                    sql = PayItemConst.SQLUPDATE;
+                    params = Tuple.of(payItemProduct.getType(), payItemProduct.getAmount(), payItemProduct.getPayId());
 
-                String sql = Constant.SQLUPDATE;
-                Tuple params = Tuple.of(payItemProduct.getType(), payItemProduct.getAmount(), payItemProduct.getPayId());
+                } else if (product instanceof SaleItemProduct) {
+                    SaleItemProduct saleItemProduct = (SaleItemProduct) product;
+                    sql = SaleItemConst.SQLUPDATE;
+                    params = Tuple.of(saleItemProduct.getItemName(), saleItemProduct.getPrice(), saleItemProduct.getVat(), saleItemProduct.getItemId());
 
+                } else {
+                    resultHandler.handle(Future.failedFuture("unsupported product type"));
+                    connection.close();
+                    return;
+                }
                 PreparedQuery<RowSet<Row>> preparedQuery = connection.preparedQuery(sql);
                 preparedQuery.execute(params, res -> {
-
-
                     if (res.succeeded()) {
-                        Long updatedPayId = (long) payItemProduct.getPayId();
-
-                        resultHandler.handle(Future.succeededFuture(updatedPayId));
+                        if (res.result().rowCount() > 0) {
+                            resultHandler.handle(Future.succeededFuture());
+                        } else {
+                            resultHandler.handle(Future.failedFuture("No rows affected"));
+                        }
 
                     } else {
                         resultHandler.handle(Future.failedFuture(res.cause()));
+
                     }
                     connection.close();
-
-
                 });
 
+            }
+        });
+    }
 
+
+
+    public <T> void deleteProductFromDatabase(Long productId, Class<T> productClass, Handler<AsyncResult<Void>> resultHandler) {
+        databasePool.getConnection(conn -> {
+            if (conn.succeeded()) {
+                SqlConnection connection = conn.result();
+                String sql;
+                Tuple params;
+
+                if (productClass.equals(PayItemProduct.class)) {
+                    sql = PayItemConst.SQLDELETE;
+                    params = Tuple.of(productId);
+                } else if (productClass.equals(SaleItemProduct.class)) {
+                    sql = SaleItemConst.SQLDELETE;
+                    params = Tuple.of(productId);
+                } else {
+                    resultHandler.handle(Future.failedFuture("unsupported product type"));
+                    connection.close();
+                    return;
+                }
+
+                PreparedQuery<RowSet<Row>> preparedQuery = connection.preparedQuery(sql);
+                preparedQuery.execute(params, res -> {
+                    if (res.succeeded()) {
+                        if (res.result().rowCount() > 0) {
+                            resultHandler.handle(Future.succeededFuture());
+                        } else {
+                            resultHandler.handle(Future.failedFuture("No rows affected"));
+                        }
+                    } else {
+                        resultHandler.handle(Future.failedFuture(res.cause()));
+                    }
+
+                    connection.close();
+                });
             } else {
                 resultHandler.handle(Future.failedFuture(conn.cause()));
             }
         });
     }
 
-public  void  deletePayItem(int payItemId,Handler<AsyncResult<Long>>resultHandler)
-{
-    databasePool.getConnection(conn->{
-        if (conn.succeeded())
-        {
-            SqlConnection connection=conn.result();
-            String sql=Constant.SQLDELETE;
-            Tuple params=Tuple.of(payItemId);
-            PreparedQuery<RowSet<Row>>preparedQuery=connection.preparedQuery(sql);
-            preparedQuery.execute(params,res->{
-                if(res.succeeded())
-                {
-                    Long deletePayId=(long) payItemId;
-                    resultHandler.handle(Future.succeededFuture(deletePayId));
-                }
-                else{
-                    resultHandler.handle(Future.failedFuture(res.cause()));
-                }
-                connection.close();
-
-            });
-
-        }
-    });
-}
 }
 
 
